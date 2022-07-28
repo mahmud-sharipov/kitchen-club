@@ -17,5 +17,6 @@ public class User : BaseEntity
     public string PasswordHash { get; set; } = "";
     public bool IsActive { get; set; }
 
+    [System.Text.Json.Serialization.JsonIgnore]
     public virtual ICollection<UserMenuItemSelection> MenuSelections { get; private set; }
 }

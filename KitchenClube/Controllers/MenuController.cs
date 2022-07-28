@@ -4,23 +4,21 @@ namespace KitchenClube.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class MenusController : ControllerBase
+public class MenuController : ControllerBase
 {
     private readonly KitchenClubContext _context;
 
-    public MenusController(KitchenClubContext context)
+    public MenuController(KitchenClubContext context)
     {
         _context = context;
     }
 
-    // GET: api/Menus
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Menu>>> GetMenu()
     {
         return await _context.Menu.ToListAsync();
     }
 
-    // GET: api/Menus/5
     [HttpGet("{id}")]
     public async Task<ActionResult<Menu>> GetMenu(Guid id)
     {
@@ -33,8 +31,6 @@ public class MenusController : ControllerBase
         return menu;
     }
 
-    // PUT: api/Menus/5
-    // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPut("{id}")]
     public async Task<IActionResult> PutMenu(Guid id, Menu menu)
     {
@@ -59,8 +55,6 @@ public class MenusController : ControllerBase
         return NoContent();
     }
 
-    // POST: api/Menus
-    // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPost]
     public async Task<ActionResult<Menu>> PostMenu(Menu menu)
     {
@@ -70,7 +64,6 @@ public class MenusController : ControllerBase
         return CreatedAtAction("GetMenu", new { id = menu.Id }, menu);
     }
 
-    // DELETE: api/Menus/5
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteMenu(Guid id)
     {

@@ -17,5 +17,6 @@ public class MenuItem : BaseEntity
     public Guid MenuId { get; set; }
     public virtual Menu Menu { get; set; }
 
+    [System.Text.Json.Serialization.JsonIgnore]
     public virtual ICollection<UserMenuItemSelection> UserMenuItemSelections { get; private set; }
 }

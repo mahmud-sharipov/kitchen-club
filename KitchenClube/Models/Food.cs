@@ -18,6 +18,6 @@ public class Food : BaseEntity
     public string Description { get; set; }
     public bool IsActive { get; set; }
 
-    [JsonIgnore ]
+    [JsonIgnore]
     public virtual ICollection<MenuItem> MenuItems { get; private set; }
 }

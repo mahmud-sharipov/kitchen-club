@@ -1,4 +1,5 @@
 ﻿using KitchenClube.Data;
+using KitchenClube.Requests.MenuItem;
 
 namespace KitchenClube.Controllers;
 
@@ -13,76 +14,80 @@ public class MenuItemsController : ControllerBase
         _context = context;
     }
 
-    // GET: api/MenuItems
     [HttpGet]
     public async Task<ActionResult<IEnumerable<MenuItem>>> GetMenuItems()
     {
         return await _context.MenuItems.ToListAsync();
     }
 
-    // GET: api/MenuItems/5
     [HttpGet("{id}")]
     public async Task<ActionResult<MenuItem>> GetMenuItem(Guid id)
     {
         var menuItem = await _context.MenuItems.FindAsync(id);
 
         if (menuItem == null)
-        {
             return NotFound();
-        }
 
         return menuItem;
     }
 
-    // PUT: api/MenuItems/5
-    // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutMenuItem(Guid id, MenuItem menuItem)
+    public async Task<IActionResult> PutMenuItem(Guid id, UpdateMenuItemRequest menuItemRequest)
     {
-        if (id != menuItem.Id)
-        {
-            return BadRequest();
-        }
+        var menuItem = _context.MenuItems.FirstOrDefault(x => x.Id == id);
+        if (menuItem is null)
+            return NotFound();
 
-        _context.Entry(menuItem).State = EntityState.Modified;
+        var food = _context.Foods.FirstOrDefault(x => x.Id == menuItemRequest.FoodId);
+        if (food is null)
+            return NotFound(menuItemRequest.FoodId);
 
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!MenuItemExists(id))
-            {
-                return NotFound();
-            }
-            else
-            {
-                throw;
-            }
-        }
+        var menu = _context.Menu.FirstOrDefault(x => x.Id == menuItemRequest.MenuId);
+        if (menu is null)
+            return NotFound(menuItemRequest.MenuId);
 
+        if (menuItemRequest.Day > menu.EndDate || menuItemRequest.Day < menu.StartDate)
+            throw new Exception("Date is out of menu period!!!");
+
+        menuItem.Food = food;
+        menuItem.Menu = menu;
+        menuItem.Day = menuItemRequest.Day;
+        menuItem.IsActive = menuItemRequest.IsActive;
+        _context.MenuItems.Update(menuItem);
+        await _context.SaveChangesAsync();
         return NoContent();
     }
 
-    // POST: api/MenuItems
-    // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPost]
-    public async Task<ActionResult<MenuItem>> PostMenuItem(MenuItem menuItem)
+    public async Task<ActionResult<MenuItem>> PostMenuItem(CreateMenuItemRequest menuItemRequest)
     {
+        var menu = _context.Menu.FirstOrDefault(x => x.Id == menuItemRequest.MenuId);
+        if (menu is null)
+            return NotFound(menuItemRequest.MenuId);
+
+        var food = _context.Foods.FirstOrDefault(x => x.Id == menuItemRequest.FoodId);
+        if (food is null)
+            return NotFound(menuItemRequest.FoodId);
+
+        if (menuItemRequest.Day > menu.EndDate || menuItemRequest.Day < menu.StartDate)
+            throw new Exception("Date is out of menu period!!!");
+
+        var menuItem = new MenuItem() {
+            IsActive = true,
+            Food = food,
+            Menu = menu,
+            Day = menuItemRequest.Day,
+        };
         _context.MenuItems.Add(menuItem);
         await _context.SaveChangesAsync();
-
         return CreatedAtAction("GetMenuItem", new { id = menuItem.Id }, menuItem);
     }
 
-    // DELETE: api/MenuItems/5
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteMenuItem(Guid id)
     {
         var menuItem = await _context.MenuItems.FindAsync(id);
-        if (menuItem == null)
-        {
+        if (menuItem == null) {
             return NotFound();
         }
 
@@ -90,10 +95,5 @@ public class MenuItemsController : ControllerBase
         await _context.SaveChangesAsync();
 
         return NoContent();
-    }
-
-    private bool MenuItemExists(Guid id)
-    {
-        return _context.MenuItems.Any(e => e.Id == id);
     }
 }
