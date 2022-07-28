@@ -1,4 +1,6 @@
 ﻿using KitchenClube.Data;
+using KitchenClube.Requests.User;
+using KitchenClube.Responses;
 
 namespace KitchenClube.Controllers
 {
@@ -13,76 +15,69 @@ namespace KitchenClube.Controllers
             _context = context;
         }
 
-        // GET: api/Users
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        public async Task<ActionResult<IEnumerable<UserResponse>>> GetUsers()
         {
-            return await _context.Users.ToListAsync();
+            return await _context.Users
+                .Select(u => new UserResponse(u.Id, u.FullName, u.PhoneNumber, u.Email, u.IsActive))
+                .ToListAsync();
         }
 
-        // GET: api/Users/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetUser(Guid id)
+        public async Task<ActionResult<UserResponse>> GetUser(Guid id)
         {
             var user = await _context.Users.FindAsync(id);
 
             if (user == null)
-            {
+                return NotFound();
+
+            return new UserResponse(user.Id, user.FullName, user.PhoneNumber, user.Email, user.IsActive);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutUser(Guid id, UpdateUser updateUser)
+        {
+            var user = _context.Users.FirstOrDefault(u => u.Id == id);
+            if (user is null) {
                 return NotFound();
             }
 
-            return user;
-        }
+            user.FullName = updateUser.FullName;
+            user.PhoneNumber = updateUser.PhoneNumber;
+            user.Email = updateUser.Email;
+            user.IsActive = updateUser.IsActive;
 
-        // PUT: api/Users/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutUser(Guid id, User user)
-        {
-            if (id != user.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(user).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!UserExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+            await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        // POST: api/Users
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<User>> PostUser(User user)
+        public async Task<ActionResult<UserResponse>> PostUser(CreateUser createUser)
         {
+            foreach (var u in _context.Users) {
+                if (u.Email == createUser.Email) {
+                    throw new Exception("Email exsists");
+                }
+            }
+
+            var user = new User();
+            user.FullName = createUser.FullName;
+            user.Email = createUser.Email;
+            user.IsActive = true;
+            user.PhoneNumber = createUser.PhoneNumber;
+            user.PasswordHash = Guid.NewGuid().ToString();
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetUser", new { id = user.Id }, user);
         }
 
-        // DELETE: api/Users/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(Guid id)
         {
             var user = await _context.Users.FindAsync(id);
-            if (user == null)
-            {
+            if (user == null) {
                 return NotFound();
             }
 

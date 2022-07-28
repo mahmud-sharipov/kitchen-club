@@ -12,11 +12,13 @@ public class MenuItem : BaseEntity
     public bool IsActive { get; set; }
 
     public Guid FoodId { get; set; }
+    [JsonIgnore]
     public virtual Food Food { get; set; }
 
     public Guid MenuId { get; set; }
+    [JsonIgnore]
     public virtual Menu Menu { get; set; }
 
-    [System.Text.Json.Serialization.JsonIgnore]
+    [JsonIgnore]
     public virtual ICollection<UserMenuItemSelection> UserMenuItemSelections { get; private set; }
 }

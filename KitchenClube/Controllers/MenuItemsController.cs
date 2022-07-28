@@ -1,5 +1,6 @@
 ﻿using KitchenClube.Data;
 using KitchenClube.Requests.MenuItem;
+using KitchenClube.Responses;
 
 namespace KitchenClube.Controllers;
 
@@ -15,20 +16,22 @@ public class MenuItemsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<MenuItem>>> GetMenuItems()
+    public async Task<ActionResult<IEnumerable<MenuItemResponse>>> GetMenuItems()
     {
-        return await _context.MenuItems.ToListAsync();
+        return await _context.MenuItems
+            .Select(m=>new MenuItemResponse(m.Id, m.Day, m.FoodId, m.MenuId, m.IsActive)).ToListAsync();
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<MenuItem>> GetMenuItem(Guid id)
+    public async Task<ActionResult<MenuItemResponse>> GetMenuItem(Guid id)
     {
         var menuItem = await _context.MenuItems.FindAsync(id);
 
         if (menuItem == null)
             return NotFound();
 
-        return menuItem;
+        return 
+            new MenuItemResponse(menuItem.Id, menuItem.Day, menuItem.FoodId, menuItem.MenuId, menuItem.IsActive);
     }
 
     [HttpPut("{id}")]

@@ -1,7 +1,4 @@
-﻿
-using System.Text.Json.Serialization;
-
-namespace KitchenClube.Models;
+﻿namespace KitchenClube.Models;
 
 public class Food : BaseEntity
 {
@@ -17,7 +14,5 @@ public class Food : BaseEntity
     public string Image { get; set; }
     public string Description { get; set; }
     public bool IsActive { get; set; }
-
-    [JsonIgnore]
     public virtual ICollection<MenuItem> MenuItems { get; private set; }
 }

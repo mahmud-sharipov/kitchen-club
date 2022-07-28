@@ -11,12 +11,11 @@ public class User : BaseEntity
         IsActive = true;
         MenuSelections = new Collection<UserMenuItemSelection>();
     }
-    public string FullName { get; set; } = "";
-    public string PhoneNumber { get; set; } = "";
-    public string Email { get; set; } = "";
-    public string PasswordHash { get; set; } = "";
+    public string FullName { get; set; }
+    public string PhoneNumber { get; set; }
+    public string Email { get; set; }
+    public string PasswordHash { get; set; }
     public bool IsActive { get; set; }
 
-    [System.Text.Json.Serialization.JsonIgnore]
     public virtual ICollection<UserMenuItemSelection> MenuSelections { get; private set; }
 }

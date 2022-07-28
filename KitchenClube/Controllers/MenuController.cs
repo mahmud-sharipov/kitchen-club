@@ -1,4 +1,6 @@
 ﻿using KitchenClube.Data;
+using KitchenClube.Requests.Menu;
+using KitchenClube.Responses;
 
 namespace KitchenClube.Controllers;
 
@@ -14,51 +16,54 @@ public class MenuController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Menu>>> GetMenu()
+    public async Task<ActionResult<IEnumerable<MenuResponse>>> GetMenu()
     {
-        return await _context.Menu.ToListAsync();
+        return await _context.Menu
+            .Select(u=>new MenuResponse(u.Id,u.StartDate,u.EndDate,u.Status)).ToListAsync();
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Menu>> GetMenu(Guid id)
+    public async Task<ActionResult<MenuResponse>> GetMenu(Guid id)
     {
         var menu = await _context.Menu.FindAsync(id);
 
-        if (menu == null) {
+        if (menu == null) 
             return NotFound();
-        }
-
-        return menu;
+        
+        return new MenuResponse(menu.Id, menu.StartDate, menu.EndDate, menu.Status);
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutMenu(Guid id, Menu menu)
+    public async Task<IActionResult> PutMenu(Guid id, UpdateMenu updateMenu)
     {
-        if (id != menu.Id) {
-            return BadRequest();
-        }
+        var menu = _context.Menu.Find(id);
+        if (menu is null)
+            return NotFound();
 
-        _context.Entry(menu).State = EntityState.Modified;
+        if (updateMenu.StartDate > updateMenu.EndDate || updateMenu.StartDate == updateMenu.EndDate) 
+            throw new Exception("Wrong Date");        
 
-        try {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException) {
-            if (!MenuExists(id)) {
-                return NotFound();
-            }
-            else {
-                throw;
-            }
-        }
+        menu.StartDate = updateMenu.StartDate;
+        menu.EndDate = updateMenu.EndDate;
+
+        await _context.SaveChangesAsync();
 
         return NoContent();
     }
 
     [HttpPost]
-    public async Task<ActionResult<Menu>> PostMenu(Menu menu)
+    public async Task<ActionResult<Menu>> PostMenu(CreateMenu createMenu)
     {
+        if (createMenu.StartDate == createMenu.EndDate || createMenu.EndDate < createMenu.StartDate) {
+            throw new Exception("Wrong dates");
+        }
+
+        var menu = new Menu();
+        menu.StartDate = createMenu.StartDate;
+        menu.EndDate = createMenu.EndDate;
+        menu.Status = createMenu.Status;
         _context.Menu.Add(menu);
+
         await _context.SaveChangesAsync();
 
         return CreatedAtAction("GetMenu", new { id = menu.Id }, menu);
