@@ -1,10 +1,17 @@
+using KitchenClube.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 {
+    builder.Services.AddDbContext<KitchenClubContext>(options =>
+    {
+        options.UseMySql(builder.Configuration.GetConnectionString("mysql"), Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.0-mysql"));
+    });
+
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
+    builder.Services.AddSwaggerGen();    
 }
 
 var app = builder.Build();
