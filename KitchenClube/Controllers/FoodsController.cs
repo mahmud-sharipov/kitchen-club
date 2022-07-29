@@ -14,12 +14,11 @@ public class FoodsController : ControllerBase
     {
         _context = context;
     }
-    
+
     [HttpGet]
     public async Task<ActionResult<IEnumerable<FoodResponse>>> GetFoods()
     {
-        return await _context.Foods
-            .Select(f=>new FoodResponse(f.Id,f.Name, f.Image, f.Description, f.IsActive)).ToListAsync();
+        return await _context.Foods.Select(f => ToDto(f)).ToListAsync();
     }
 
     [HttpGet("{id}")]
@@ -27,11 +26,15 @@ public class FoodsController : ControllerBase
     {
         var food = await _context.Foods.FindAsync(id);
 
-        if (food == null) {
+        if (food == null)
             return NotFound();
-        }
 
-        return new FoodResponse(food.Id, food.Name,food.Image,food.Description,food.IsActive);
+        return ToDto(food);
+    }
+
+    private static FoodResponse ToDto(Food food)
+    {
+        return new FoodResponse(food.Id, food.Name, food.Image, food.Description, food.IsActive);
     }
 
     [HttpPut("{id}")]
@@ -39,16 +42,16 @@ public class FoodsController : ControllerBase
     {
         var food = _context.Foods.FirstOrDefault(x => x.Id == id);
 
-        if (food is null) 
+        if (food is null)
             return NotFound();
-        
+
         food.IsActive = updateFood.IsActive;
         food.Name = updateFood.Name;
         food.Description = updateFood.Description;
         food.Image = updateFood.Image;
 
-        _context.Entry(food).State = EntityState.Modified;
-        await _context.SaveChangesAsync();       
+        _context.Foods.Update(food);
+        await _context.SaveChangesAsync();
 
         return NoContent();
     }
@@ -72,10 +75,10 @@ public class FoodsController : ControllerBase
     public async Task<IActionResult> DeleteFood(Guid id)
     {
         var food = await _context.Foods.FindAsync(id);
-        if (food == null) {
+        if (food == null)
             return NotFound();
-        }
 
+        //TODO: VAlidation: Do not allow to delete food if it has been used in MenuItem
         _context.Foods.Remove(food);
         await _context.SaveChangesAsync();
 

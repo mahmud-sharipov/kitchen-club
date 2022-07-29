@@ -3,41 +3,44 @@ using System;
 using KitchenClube.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace KitchenClube.Migrations
+namespace KitchenClube.Migrations.SqlServer
 {
-    [DbContext(typeof(KitchenClubContext))]
-    [Migration("20220727091438_AddingData")]
-    partial class AddingData
+    [DbContext(typeof(KitchenClubSqlServerContext))]
+    [Migration("20220729040920_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "6.0.7")
-                .HasAnnotation("Relational:MaxIdentifierLength", 64);
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
             modelBuilder.Entity("KitchenClube.Models.Food", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Description")
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Image")
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("tinyint(1)");
+                        .HasColumnType("bit");
 
                     b.Property<string>("Name")
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -46,7 +49,7 @@ namespace KitchenClube.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("cf0a6ada-b316-4ed2-ba5b-047539513520"),
+                            Id = new Guid("b3192fdd-c484-4558-a92c-85277076c389"),
                             Description = "1 ба 1",
                             Image = "images/osh.png",
                             IsActive = true,
@@ -54,7 +57,7 @@ namespace KitchenClube.Migrations
                         },
                         new
                         {
-                            Id = new Guid("d004d696-3910-4721-8227-837a2e1db157"),
+                            Id = new Guid("df7e0db4-4e07-405b-816f-9c1aee84ebd5"),
                             Description = "Бо гӯшти гӯспанд",
                             Image = "images/kazan.png",
                             IsActive = true,
@@ -62,7 +65,7 @@ namespace KitchenClube.Migrations
                         },
                         new
                         {
-                            Id = new Guid("f2aa1ecf-b080-4218-be79-f9beff2f08fe"),
+                            Id = new Guid("b82375b0-761d-4073-a019-9d8f737efdf4"),
                             Description = "Бо гӯшти гов",
                             Image = "images/jazza.png",
                             IsActive = true,
@@ -74,13 +77,13 @@ namespace KitchenClube.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("EndDate")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -92,9 +95,9 @@ namespace KitchenClube.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("ce08a354-da82-4cfb-9c5e-f36fa6eb8a39"),
-                            EndDate = new DateTime(2022, 7, 27, 14, 14, 38, 324, DateTimeKind.Local).AddTicks(5869),
-                            StartDate = new DateTime(2022, 7, 27, 14, 14, 38, 324, DateTimeKind.Local).AddTicks(5854),
+                            Id = new Guid("e3e494c4-f4c8-41e1-a93e-e8eab21e5674"),
+                            EndDate = new DateTime(2022, 7, 29, 9, 9, 20, 769, DateTimeKind.Local).AddTicks(1425),
+                            StartDate = new DateTime(2022, 7, 29, 9, 9, 20, 769, DateTimeKind.Local).AddTicks(1418),
                             Status = 1
                         });
                 });
@@ -103,19 +106,19 @@ namespace KitchenClube.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("Day")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("datetime2");
 
                     b.Property<Guid>("FoodId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("tinyint(1)");
+                        .HasColumnType("bit");
 
                     b.Property<Guid>("MenuId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -130,22 +133,22 @@ namespace KitchenClube.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Email")
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FullName")
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("tinyint(1)");
+                        .HasColumnType("bit");
 
                     b.Property<string>("PasswordHash")
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -154,7 +157,7 @@ namespace KitchenClube.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("2d01ce09-510c-4d2e-a2b7-05fb28bb0963"),
+                            Id = new Guid("8571eca7-d8d3-4e78-a43d-f48eadc8ba4e"),
                             Email = "azizjon@gmail.com",
                             FullName = "Azizjon",
                             IsActive = true,
@@ -163,7 +166,7 @@ namespace KitchenClube.Migrations
                         },
                         new
                         {
-                            Id = new Guid("3bba2bd9-c6a8-47a1-abba-13d251d5f2d9"),
+                            Id = new Guid("8a9c9de8-1da2-4ac7-a8ec-ac5715c57950"),
                             Email = "amirjon@gmail.com",
                             FullName = "Amirjon",
                             IsActive = true,
@@ -172,7 +175,7 @@ namespace KitchenClube.Migrations
                         },
                         new
                         {
-                            Id = new Guid("b7f7d40a-bf83-4738-adaf-4bbba281b68e"),
+                            Id = new Guid("5642ea1a-d5bb-4eda-8efe-89e1e794a788"),
                             Email = "karimjon@gamil.com",
                             FullName = "Karimjon",
                             IsActive = true,
@@ -185,13 +188,13 @@ namespace KitchenClube.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("MenuitemId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("UserId")
-                        .HasColumnType("char(36)");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Vote")
                         .HasColumnType("int");

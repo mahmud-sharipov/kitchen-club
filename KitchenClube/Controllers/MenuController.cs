@@ -19,7 +19,7 @@ public class MenuController : ControllerBase
     public async Task<ActionResult<IEnumerable<MenuResponse>>> GetMenu()
     {
         return await _context.Menu
-            .Select(u=>new MenuResponse(u.Id,u.StartDate,u.EndDate,u.Status)).ToListAsync();
+            .Select(u => new MenuResponse(u.Id, u.StartDate, u.EndDate, u.Status)).ToListAsync();
     }
 
     [HttpGet("{id}")]
@@ -27,9 +27,9 @@ public class MenuController : ControllerBase
     {
         var menu = await _context.Menu.FindAsync(id);
 
-        if (menu == null) 
+        if (menu == null)
             return NotFound();
-        
+
         return new MenuResponse(menu.Id, menu.StartDate, menu.EndDate, menu.Status);
     }
 
@@ -40,12 +40,15 @@ public class MenuController : ControllerBase
         if (menu is null)
             return NotFound();
 
-        if (updateMenu.StartDate > updateMenu.EndDate || updateMenu.StartDate == updateMenu.EndDate) 
-            throw new Exception("Wrong Date");        
+        if (updateMenu.StartDate > updateMenu.EndDate || updateMenu.StartDate == updateMenu.EndDate)
+            throw new Exception("Wrong Date");
+
+        //TODO: Do not allow to change menu if it is closed
 
         menu.StartDate = updateMenu.StartDate;
         menu.EndDate = updateMenu.EndDate;
 
+        _context.Update(menu);
         await _context.SaveChangesAsync();
 
         return NoContent();
@@ -57,6 +60,7 @@ public class MenuController : ControllerBase
         if (createMenu.StartDate == createMenu.EndDate || createMenu.EndDate < createMenu.StartDate) {
             throw new Exception("Wrong dates");
         }
+        //TODO: Do not allow to add item to closed menu
 
         var menu = new Menu();
         menu.StartDate = createMenu.StartDate;
@@ -77,6 +81,7 @@ public class MenuController : ControllerBase
             return NotFound();
         }
 
+        //TODO: Do not allow to delete closed menu
         _context.Menu.Remove(menu);
         await _context.SaveChangesAsync();
 

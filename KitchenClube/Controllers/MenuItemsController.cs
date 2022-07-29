@@ -19,7 +19,7 @@ public class MenuItemsController : ControllerBase
     public async Task<ActionResult<IEnumerable<MenuItemResponse>>> GetMenuItems()
     {
         return await _context.MenuItems
-            .Select(m=>new MenuItemResponse(m.Id, m.Day, m.FoodId, m.MenuId, m.IsActive)).ToListAsync();
+            .Select(m => new MenuItemResponse(m.Id, m.Day, m.FoodId, m.MenuId, m.IsActive)).ToListAsync();
     }
 
     [HttpGet("{id}")]
@@ -30,9 +30,18 @@ public class MenuItemsController : ControllerBase
         if (menuItem == null)
             return NotFound();
 
-        return 
+        return
             new MenuItemResponse(menuItem.Id, menuItem.Day, menuItem.FoodId, menuItem.MenuId, menuItem.IsActive);
     }
+
+
+    [HttpGet("menu/{menuId}")]
+    public async Task<ActionResult<IEnumerable<MenuItemResponse>>> GetMenuItemsByMenuId(Guid menuId)
+    {
+        return await _context.MenuItems.Where(mi => mi.MenuId == menuId)
+            .Select(m => new MenuItemResponse(m.Id, m.Day, m.FoodId, m.MenuId, m.IsActive)).ToListAsync();
+    }
+
 
     [HttpPut("{id}")]
     public async Task<IActionResult> PutMenuItem(Guid id, UpdateMenuItemRequest menuItemRequest)
@@ -51,6 +60,8 @@ public class MenuItemsController : ControllerBase
 
         if (menuItemRequest.Day > menu.EndDate || menuItemRequest.Day < menu.StartDate)
             throw new Exception("Date is out of menu period!!!");
+
+        //TODO: Do not allow to delete closed menu if it is a day in past.
 
         menuItem.Food = food;
         menuItem.Menu = menu;
@@ -93,6 +104,7 @@ public class MenuItemsController : ControllerBase
         if (menuItem == null) {
             return NotFound();
         }
+        //TODO: Do not allow to delete closed menu if it is a day in past.
 
         _context.MenuItems.Remove(menuItem);
         await _context.SaveChangesAsync();
