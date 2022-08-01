@@ -78,9 +78,7 @@ public class FoodsController : ControllerBase
         if (food == null)
             return NotFound();
 
-        //TODO: VAlidation: Do not allow to delete food if it has been used in MenuItem
-        var menuItem = _context.MenuItems.Where(mi => mi.FoodId == id).FirstOrDefault();
-        if (menuItem is not null) {
+        if (_context.MenuItems.Any(mi => mi.FoodId == id)) {
             throw new Exception("Cant delete");
         }
 
@@ -88,10 +86,5 @@ public class FoodsController : ControllerBase
         await _context.SaveChangesAsync();
 
         return NoContent();
-    }
-
-    private bool FoodExists(Guid id)
-    {
-        return _context.Foods.Any(e => e.Id == id);
     }
 }

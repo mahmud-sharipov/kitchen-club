@@ -39,7 +39,7 @@ public class UserMenuItemSelectionController : ControllerBase
     [HttpGet("user/{userId}")]
     public async Task<ActionResult<IEnumerable<UserMenuItemSelectionResponse>>> GetUserMenuItemSelectionsByUserId(Guid userId)
     {
-        return await _context.UserMenuItemSelections.Where(u=>u.UserId == userId)
+        return await _context.UserMenuItemSelections.Where(u => u.UserId == userId)
             .Select(u => new UserMenuItemSelectionResponse(u.Id, u.MenuitemId, u.UserId, u.Vote)).ToListAsync();
     }
 
@@ -52,7 +52,7 @@ public class UserMenuItemSelectionController : ControllerBase
 
     [HttpPut("{id}")]
     public async Task<IActionResult> PutUserMenuItemSelection(Guid id, UpdateUserMenuItemSelection updateUserMenuItemSelection)
-    {                       
+    {
         var userMenuItemSelection = _context.UserMenuItemSelections.FirstOrDefault(u => u.Id == id);
         if (userMenuItemSelection is null)
             return NotFound(id);
@@ -83,7 +83,7 @@ public class UserMenuItemSelectionController : ControllerBase
 
     [HttpPost]
     public async Task<ActionResult<UserMenuItemSelection>> PostUserMenuItemSelection(CreateUserMenuItemSelection createUserMenuItemSelection)
-    {        
+    {
         var user = _context.Users.FirstOrDefault(u => u.Id == createUserMenuItemSelection.UserId);
         if (user == null)
             return NotFound(createUserMenuItemSelection.UserId);
@@ -115,18 +115,12 @@ public class UserMenuItemSelectionController : ControllerBase
             return NotFound();
         }
         //TODO: Do not allow to delete if menu item day in past.
-        var menuItem = _context.MenuItems.Where(m => m.Id == userMenuItemSelection.MenuitemId).FirstOrDefault();
-        if (menuItem.Day < DateTime.Now)
+        if (userMenuItemSelection.Menuitem.Day < DateTime.Now)
             throw new Exception("Cant delete past menu selection");
 
         _context.UserMenuItemSelections.Remove(userMenuItemSelection);
         await _context.SaveChangesAsync();
 
         return NoContent();
-    }
-
-    private bool UserMenuItemSelectionExists(Guid id)
-    {
-        return _context.UserMenuItemSelections.Any(e => e.Id == id);
     }
 }

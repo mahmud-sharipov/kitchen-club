@@ -91,10 +91,5 @@ namespace KitchenClube.Controllers
 
             return NoContent();
         }
-
-        private bool UserExists(Guid id)
-        {
-            return _context.Users.Any(e => e.Id == id);
-        }
     }
 }

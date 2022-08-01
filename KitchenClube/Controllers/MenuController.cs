@@ -63,7 +63,7 @@ public class MenuController : ControllerBase
     {
         if (createMenu.StartDate == createMenu.EndDate || createMenu.EndDate < createMenu.StartDate) {
             throw new Exception("Wrong dates");
-        }        
+        }
 
         var menu = new Menu();
         menu.StartDate = createMenu.StartDate;
@@ -93,10 +93,5 @@ public class MenuController : ControllerBase
         await _context.SaveChangesAsync();
 
         return NoContent();
-    }
-
-    private bool MenuExists(Guid id)
-    {
-        return _context.Menu.Any(e => e.Id == id);
     }
 }
