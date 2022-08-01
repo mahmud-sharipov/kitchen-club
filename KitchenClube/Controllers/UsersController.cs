@@ -44,9 +44,9 @@ namespace KitchenClube.Controllers
 
             user.FullName = updateUser.FullName;
             user.PhoneNumber = updateUser.PhoneNumber;
-            user.Email = updateUser.Email;
             user.IsActive = updateUser.IsActive;
 
+            _context.Users.Update(user);
             await _context.SaveChangesAsync();
 
             return NoContent();
@@ -77,9 +77,14 @@ namespace KitchenClube.Controllers
         public async Task<IActionResult> DeleteUser(Guid id)
         {
             var user = await _context.Users.FindAsync(id);
-            if (user == null) {
+            if (user == null)
                 return NotFound();
-            }
+            
+            var userMenuItem = _context.UserMenuItemSelections.Where(u=>u.UserId == id).FirstOrDefault();
+
+            if (userMenuItem is not null) 
+                throw new Exception("Cant delete");
+            
 
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();

@@ -10,10 +10,8 @@ public class UserMenuItemSelection : BaseEntity
     public UserVote Vote { get; set; }
 
     public Guid MenuitemId { get; set; }
-    [JsonIgnore]
     public virtual MenuItem Menuitem { get; set; }
 
-    public Guid UserId { get; set; }
-    [JsonIgnore]
+    public Guid UserId { get; set; }    
     public virtual User User { get; set; }
 }

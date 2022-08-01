@@ -79,6 +79,11 @@ public class FoodsController : ControllerBase
             return NotFound();
 
         //TODO: VAlidation: Do not allow to delete food if it has been used in MenuItem
+        var menuItem = _context.MenuItems.Where(mi => mi.FoodId == id).FirstOrDefault();
+        if (menuItem is not null) {
+            throw new Exception("Cant delete");
+        }
+
         _context.Foods.Remove(food);
         await _context.SaveChangesAsync();
 

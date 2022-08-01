@@ -34,7 +34,6 @@ public class MenuItemsController : ControllerBase
             new MenuItemResponse(menuItem.Id, menuItem.Day, menuItem.FoodId, menuItem.MenuId, menuItem.IsActive);
     }
 
-
     [HttpGet("menu/{menuId}")]
     public async Task<ActionResult<IEnumerable<MenuItemResponse>>> GetMenuItemsByMenuId(Guid menuId)
     {
@@ -42,6 +41,12 @@ public class MenuItemsController : ControllerBase
             .Select(m => new MenuItemResponse(m.Id, m.Day, m.FoodId, m.MenuId, m.IsActive)).ToListAsync();
     }
 
+    [HttpGet("food/{foodId}")]
+    public async Task<ActionResult<IEnumerable<MenuItemResponse>>> GetMenuItemsByFoodId(Guid foodId)
+    {
+        return await _context.MenuItems.Where(mi => mi.FoodId == foodId)
+            .Select(m => new MenuItemResponse(m.Id, m.Day, m.FoodId, m.MenuId, m.IsActive)).ToListAsync();
+    }
 
     [HttpPut("{id}")]
     public async Task<IActionResult> PutMenuItem(Guid id, UpdateMenuItemRequest menuItemRequest)
@@ -61,7 +66,9 @@ public class MenuItemsController : ControllerBase
         if (menuItemRequest.Day > menu.EndDate || menuItemRequest.Day < menu.StartDate)
             throw new Exception("Date is out of menu period!!!");
 
-        //TODO: Do not allow to delete closed menu if it is a day in past.
+        //TODO: Do not allow to delete closed menu if it is a day in past.        
+        if (menuItem.Day < menuItemRequest.Day)
+            throw new Exception("Cant change past");
 
         menuItem.Food = food;
         menuItem.Menu = menu;
@@ -78,6 +85,10 @@ public class MenuItemsController : ControllerBase
         var menu = _context.Menu.FirstOrDefault(x => x.Id == menuItemRequest.MenuId);
         if (menu is null)
             return NotFound(menuItemRequest.MenuId);
+
+        //TODO: Do not allow to add item to closed menu
+        if (menu.Status is MenuStatus.Closed)
+            throw new Exception("Closed menu");
 
         var food = _context.Foods.FirstOrDefault(x => x.Id == menuItemRequest.FoodId);
         if (food is null)
@@ -105,7 +116,9 @@ public class MenuItemsController : ControllerBase
             return NotFound();
         }
         //TODO: Do not allow to delete closed menu if it is a day in past.
-
+        if (menuItem.Day < DateTime.Now)
+            throw new Exception("Cant delete past menuItems");
+        
         _context.MenuItems.Remove(menuItem);
         await _context.SaveChangesAsync();
 

@@ -44,9 +44,13 @@ public class MenuController : ControllerBase
             throw new Exception("Wrong Date");
 
         //TODO: Do not allow to change menu if it is closed
+        if (menu.Status is MenuStatus.Closed) {
+            throw new Exception("Cant change closed menu");
+        }
 
         menu.StartDate = updateMenu.StartDate;
         menu.EndDate = updateMenu.EndDate;
+        menu.Status = updateMenu.Status;
 
         _context.Update(menu);
         await _context.SaveChangesAsync();
@@ -59,13 +63,12 @@ public class MenuController : ControllerBase
     {
         if (createMenu.StartDate == createMenu.EndDate || createMenu.EndDate < createMenu.StartDate) {
             throw new Exception("Wrong dates");
-        }
-        //TODO: Do not allow to add item to closed menu
+        }        
 
         var menu = new Menu();
         menu.StartDate = createMenu.StartDate;
         menu.EndDate = createMenu.EndDate;
-        menu.Status = createMenu.Status;
+        menu.Status = MenuStatus.Active;
         _context.Menu.Add(menu);
 
         await _context.SaveChangesAsync();
@@ -82,6 +85,10 @@ public class MenuController : ControllerBase
         }
 
         //TODO: Do not allow to delete closed menu
+        if (menu.Status is MenuStatus.Closed) {
+            throw new Exception("Cant delete closed menu");
+        }
+
         _context.Menu.Remove(menu);
         await _context.SaveChangesAsync();
 
