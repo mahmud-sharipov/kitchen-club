@@ -1,7 +1,9 @@
 ﻿namespace KitchenClube.Exceptions
 {
-    public class BadRequestException: Exception
+    public class BadRequestException : Exception, IKitchenClubeCustomException
     {
-        public BadRequestException(string message):base(message){}
+        public BadRequestException(string message) : base(message) { }
+
+        public HttpStatusCode StatusCode => HttpStatusCode.BadRequest;
     }
 }

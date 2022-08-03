@@ -28,7 +28,7 @@ public class FoodsController : ControllerBase
         var food = await _context.Foods.FindAsync(id);
 
         if (food == null)
-            throw new NotFoundException("wrong id");
+            throw new NotFoundException(nameof(Food), id);
 
         return ToDto(food);
     }
@@ -44,7 +44,7 @@ public class FoodsController : ControllerBase
         var food = _context.Foods.FirstOrDefault(x => x.Id == id);
 
         if (food is null)
-            throw new NotFoundException("wrong id");
+            throw new NotFoundException(nameof(Food), id);
 
         food.IsActive = updateFood.IsActive;
         food.Name = updateFood.Name;
@@ -77,10 +77,10 @@ public class FoodsController : ControllerBase
     {
         var food = await _context.Foods.FindAsync(id);
         if (food == null)
-            throw new NotFoundException("wrong id");
+            throw new NotFoundException("wrong id"); //TODO: change
 
-        if (_context.MenuItems.Any(mi => mi.FoodId == id)) 
-            throw new BadRequestException("Cant delete");
+        if (_context.MenuItems.Any(mi => mi.FoodId == id))
+            throw new BadRequestException("Food cannot be deleted because it is used on some menu items!");
 
         _context.Foods.Remove(food);
         await _context.SaveChangesAsync();

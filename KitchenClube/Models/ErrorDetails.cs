@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace WebApplication1.Models
+namespace KitchenClube.Models
 {
     public class ErrorDetails
     {

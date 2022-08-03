@@ -29,7 +29,7 @@ public class MenuController : ControllerBase
         var menu = await _context.Menu.FindAsync(id);
 
         if (menu == null)
-            throw new NotFoundException("wrong id");
+            throw new NotFoundException("wrong id"); //TODO
         return ToDto(menu);
     }
 
@@ -43,18 +43,17 @@ public class MenuController : ControllerBase
     {
         var menu = _context.Menu.Find(id);
         if (menu is null)
-            throw new NotFoundException("wrong id");
+            throw new NotFoundException("wrong id");//TODO
 
         if (updateMenu.StartDate > updateMenu.EndDate || updateMenu.StartDate == updateMenu.EndDate)
-            throw new BadRequestException("Wrong Date");
+            throw new BadRequestException("Wrong Date");//TODO: put more detailed message
 
-        if (menu.Status is MenuStatus.Closed) 
-            throw new BadRequestException("Cant change closed menu");
-        
+        if (menu.Status is MenuStatus.Closed)
+            throw new BadRequestException("Cant change closed menu");//TODO
+
 
         menu.StartDate = updateMenu.StartDate;
         menu.EndDate = updateMenu.EndDate;
-        menu.Status = updateMenu.Status;
 
         _context.Update(menu);
         await _context.SaveChangesAsync();
@@ -62,16 +61,19 @@ public class MenuController : ControllerBase
         return NoContent();
     }
 
+    //PUT {id}/close
+    //PUT {id}/open
+
     [HttpPost]
     public async Task<ActionResult<Menu>> PostMenu(CreateMenu createMenu)
     {
-        if (createMenu.StartDate == createMenu.EndDate || createMenu.EndDate < createMenu.StartDate) 
-            throw new BadRequestException("Wrong dates");        
+        if (createMenu.StartDate == createMenu.EndDate || createMenu.EndDate < createMenu.StartDate)
+            throw new BadRequestException("Wrong dates");//TODO
 
         var menu = new Menu();
         menu.StartDate = createMenu.StartDate;
         menu.EndDate = createMenu.EndDate;
-        menu.Status = MenuStatus.Active;
+        menu.Status = MenuStatus.Active; //TODO: It should be Draft by default
         _context.Menu.Add(menu);
 
         await _context.SaveChangesAsync();
@@ -84,11 +86,11 @@ public class MenuController : ControllerBase
     {
         var menu = await _context.Menu.FindAsync(id);
         if (menu == null)
-            throw new NotFoundException("wrong id");
+            throw new NotFoundException("wrong id");//TODO
 
-        if (menu.Status is MenuStatus.Closed) 
-            throw new BadRequestException("Cant delete closed menu");
-        
+        if (menu.Status is MenuStatus.Closed)
+            throw new BadRequestException("Cant delete closed menu");//TODO
+
 
         _context.Menu.Remove(menu);
         await _context.SaveChangesAsync();

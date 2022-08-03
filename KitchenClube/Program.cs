@@ -1,9 +1,9 @@
-using KitchenClube.CustomExceptionMiddleWare;
+using KitchenClube.MiddleWare;
 using KitchenClube.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-    // Add services to the container.
+// Add services to the container.
 {
     //builder.Services.AddScoped<KitchenClubContext, KitchenClubSqlServerContext>();
     //builder.Services.AddDbContext<KitchenClubSqlServerContext>(options =>
@@ -27,10 +27,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 var app = builder.Build();
 
-app.UseMiddleware<ExceptionMiddleWare>();
+app.UseMiddleware<ExceptionMiddleware>();
 
 {
-    if (app.Environment.IsDevelopment()) {
+    if (app.Environment.IsDevelopment())
+    {
         app.UseSwagger();
         app.UseSwaggerUI();
     }
