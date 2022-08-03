@@ -77,7 +77,7 @@ public class FoodsController : ControllerBase
     {
         var food = await _context.Foods.FindAsync(id);
         if (food == null)
-            throw new NotFoundException("wrong id"); //TODO: change
+            throw new NotFoundException(nameof(Food),id);
 
         if (_context.MenuItems.Any(mi => mi.FoodId == id))
             throw new BadRequestException("Food cannot be deleted because it is used on some menu items!");

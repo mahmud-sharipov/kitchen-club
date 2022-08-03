@@ -30,7 +30,7 @@ namespace KitchenClube.Controllers
             var user = await _context.Users.FindAsync(id);
 
             if (user == null)
-                throw new NotFoundException("wrong id");//TODO
+                throw new NotFoundException(nameof(User), id);
 
             return new UserResponse(user.Id, user.FullName, user.PhoneNumber, user.Email, user.IsActive);
         }
@@ -40,10 +40,8 @@ namespace KitchenClube.Controllers
         {
             var user = _context.Users.FirstOrDefault(u => u.Id == id);
             if (user is null)
-            {
-                return NotFound();//TODO: Use exception
-            }
-
+                throw new NotFoundException(nameof(User),id);
+            
             user.FullName = updateUser.FullName;
             user.PhoneNumber = updateUser.PhoneNumber;
             user.IsActive = updateUser.IsActive;
@@ -59,7 +57,7 @@ namespace KitchenClube.Controllers
         {
             var email = createUser.Email.ToLower();
             if (_context.Users.Any(u => u.Email.ToLower() == email))
-                throw new BadRequestException("Email exsists");//TODO
+                throw new BadRequestException("User with this email is already regitered");
 
             var user = new User();
             user.FullName = createUser.FullName;
@@ -78,11 +76,10 @@ namespace KitchenClube.Controllers
         {
             var user = await _context.Users.FindAsync(id);
             if (user == null)
-                throw new NotFoundException("wrong id");//TODO
-
+                throw new NotFoundException(nameof(user),id);
 
             if (_context.UserMenuItemSelections.Any(u => u.UserId == id))
-                throw new BadRequestException("Cant delete");//TODO
+                throw new BadRequestException("User can not be deleted because he/she has made menu selections");
 
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();

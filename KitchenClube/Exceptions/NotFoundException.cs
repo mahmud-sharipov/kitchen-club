@@ -1,14 +1,7 @@
-﻿using System.Net;
-
-namespace KitchenClube.Exceptions
+﻿namespace KitchenClube.Exceptions
 {
     public class NotFoundException : Exception, IKitchenClubeCustomException
     {
-        //TODO remove this constructor
-        public NotFoundException(string message) : base(message)
-        {
-        }
-
         public NotFoundException(string entityName, Guid id) : this(entityName, id.ToString())
         {
         }

@@ -26,16 +26,6 @@ public class ExceptionMiddleware
                 _ => (int)HttpStatusCode.InternalServerError
             };
 
-            //switch (error)
-            //{
-            //    case IKitchenClubeCustomException customException:
-            //        response.StatusCode = (int)customException.StatusCode;
-            //        break;
-            //    default:
-            //        response.StatusCode = (int)HttpStatusCode.InternalServerError;
-            //        break;
-            //}
-
             await context.Response.WriteAsync(new ErrorDetails
             {
                 StatusCode = context.Response.StatusCode,
