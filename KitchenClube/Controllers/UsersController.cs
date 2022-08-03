@@ -1,4 +1,5 @@
 ﻿using KitchenClube.Data;
+using KitchenClube.Exceptions;
 using KitchenClube.Requests.User;
 using KitchenClube.Responses;
 
@@ -29,7 +30,7 @@ namespace KitchenClube.Controllers
             var user = await _context.Users.FindAsync(id);
 
             if (user == null)
-                return NotFound();
+                throw new NotFoundException("wrong id");
 
             return new UserResponse(user.Id, user.FullName, user.PhoneNumber, user.Email, user.IsActive);
         }
@@ -55,12 +56,10 @@ namespace KitchenClube.Controllers
         [HttpPost]
         public async Task<ActionResult<UserResponse>> PostUser(CreateUser createUser)
         {
-            foreach (var u in _context.Users) {
-                if (u.Email == createUser.Email) {
-                    throw new Exception("Email exsists");
-                }
-            }
-
+            foreach (var u in _context.Users) 
+                if (u.Email == createUser.Email) 
+                    throw new BadRequestException("Email exsists");
+                
             var user = new User();
             user.FullName = createUser.FullName;
             user.Email = createUser.Email;
@@ -78,14 +77,12 @@ namespace KitchenClube.Controllers
         {
             var user = await _context.Users.FindAsync(id);
             if (user == null)
-                return NotFound();
-            
-            var userMenuItem = _context.UserMenuItemSelections.Where(u=>u.UserId == id).FirstOrDefault();
+                throw new NotFoundException("wrong id");
 
-            if (userMenuItem is not null) 
-                throw new Exception("Cant delete");
-            
 
+            if (_context.UserMenuItemSelections.Any(u => u.UserId == id)) 
+                throw new BadRequestException("Cant delete");
+            
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
 

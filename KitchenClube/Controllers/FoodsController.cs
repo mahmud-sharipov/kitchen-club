@@ -1,4 +1,5 @@
 ﻿using KitchenClube.Data;
+using KitchenClube.Exceptions;
 using KitchenClube.Requests.Food;
 using KitchenClube.Responses;
 
@@ -27,7 +28,7 @@ public class FoodsController : ControllerBase
         var food = await _context.Foods.FindAsync(id);
 
         if (food == null)
-            return NotFound();
+            throw new NotFoundException("wrong id");
 
         return ToDto(food);
     }
@@ -43,7 +44,7 @@ public class FoodsController : ControllerBase
         var food = _context.Foods.FirstOrDefault(x => x.Id == id);
 
         if (food is null)
-            return NotFound();
+            throw new NotFoundException("wrong id");
 
         food.IsActive = updateFood.IsActive;
         food.Name = updateFood.Name;
@@ -76,11 +77,10 @@ public class FoodsController : ControllerBase
     {
         var food = await _context.Foods.FindAsync(id);
         if (food == null)
-            return NotFound();
+            throw new NotFoundException("wrong id");
 
-        if (_context.MenuItems.Any(mi => mi.FoodId == id)) {
-            throw new Exception("Cant delete");
-        }
+        if (_context.MenuItems.Any(mi => mi.FoodId == id)) 
+            throw new BadRequestException("Cant delete");
 
         _context.Foods.Remove(food);
         await _context.SaveChangesAsync();

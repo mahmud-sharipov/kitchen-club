@@ -1,4 +1,5 @@
 ﻿using KitchenClube.Data;
+using KitchenClube.Exceptions;
 using KitchenClube.Requests.Menu;
 using KitchenClube.Responses;
 
@@ -19,7 +20,7 @@ public class MenuController : ControllerBase
     public async Task<ActionResult<IEnumerable<MenuResponse>>> GetMenu()
     {
         return await _context.Menu
-            .Select(u => new MenuResponse(u.Id, u.StartDate, u.EndDate, u.Status)).ToListAsync();
+            .Select(u => ToDto(u)).ToListAsync();
     }
 
     [HttpGet("{id}")]
@@ -28,8 +29,12 @@ public class MenuController : ControllerBase
         var menu = await _context.Menu.FindAsync(id);
 
         if (menu == null)
-            return NotFound();
+            throw new NotFoundException("wrong id");
+        return ToDto(menu);
+    }
 
+    private static MenuResponse ToDto(Menu menu)
+    {
         return new MenuResponse(menu.Id, menu.StartDate, menu.EndDate, menu.Status);
     }
 
@@ -38,15 +43,14 @@ public class MenuController : ControllerBase
     {
         var menu = _context.Menu.Find(id);
         if (menu is null)
-            return NotFound();
+            throw new NotFoundException("wrong id");
 
         if (updateMenu.StartDate > updateMenu.EndDate || updateMenu.StartDate == updateMenu.EndDate)
-            throw new Exception("Wrong Date");
+            throw new BadRequestException("Wrong Date");
 
-        //TODO: Do not allow to change menu if it is closed
-        if (menu.Status is MenuStatus.Closed) {
-            throw new Exception("Cant change closed menu");
-        }
+        if (menu.Status is MenuStatus.Closed) 
+            throw new BadRequestException("Cant change closed menu");
+        
 
         menu.StartDate = updateMenu.StartDate;
         menu.EndDate = updateMenu.EndDate;
@@ -61,9 +65,8 @@ public class MenuController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Menu>> PostMenu(CreateMenu createMenu)
     {
-        if (createMenu.StartDate == createMenu.EndDate || createMenu.EndDate < createMenu.StartDate) {
-            throw new Exception("Wrong dates");
-        }
+        if (createMenu.StartDate == createMenu.EndDate || createMenu.EndDate < createMenu.StartDate) 
+            throw new BadRequestException("Wrong dates");        
 
         var menu = new Menu();
         menu.StartDate = createMenu.StartDate;
@@ -80,14 +83,12 @@ public class MenuController : ControllerBase
     public async Task<IActionResult> DeleteMenu(Guid id)
     {
         var menu = await _context.Menu.FindAsync(id);
-        if (menu == null) {
-            return NotFound();
-        }
+        if (menu == null)
+            throw new NotFoundException("wrong id");
 
-        //TODO: Do not allow to delete closed menu
-        if (menu.Status is MenuStatus.Closed) {
-            throw new Exception("Cant delete closed menu");
-        }
+        if (menu.Status is MenuStatus.Closed) 
+            throw new BadRequestException("Cant delete closed menu");
+        
 
         _context.Menu.Remove(menu);
         await _context.SaveChangesAsync();

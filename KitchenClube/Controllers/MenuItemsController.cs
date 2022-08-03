@@ -1,4 +1,5 @@
 ﻿using KitchenClube.Data;
+using KitchenClube.Exceptions;
 using KitchenClube.Requests.MenuItem;
 using KitchenClube.Responses;
 
@@ -19,7 +20,7 @@ public class MenuItemsController : ControllerBase
     public async Task<ActionResult<IEnumerable<MenuItemResponse>>> GetMenuItems()
     {
         return await _context.MenuItems
-            .Select(m => new MenuItemResponse(m.Id, m.Day, m.FoodId, m.MenuId, m.IsActive)).ToListAsync();
+            .Select(m => Todto(m)).ToListAsync();
     }
 
     [HttpGet("{id}")]
@@ -28,10 +29,15 @@ public class MenuItemsController : ControllerBase
         var menuItem = await _context.MenuItems.FindAsync(id);
 
         if (menuItem == null)
-            return NotFound();
+            throw new NotFoundException("wrong id");
 
         return
-            new MenuItemResponse(menuItem.Id, menuItem.Day, menuItem.FoodId, menuItem.MenuId, menuItem.IsActive);
+            Todto(menuItem);
+    }
+
+    private static MenuItemResponse Todto(MenuItem menuItem)
+    {
+        return new MenuItemResponse(menuItem.Id, menuItem.Day, menuItem.FoodId, menuItem.MenuId, menuItem.IsActive);
     }
 
     [HttpGet("menu/{menuId}")]
@@ -53,7 +59,7 @@ public class MenuItemsController : ControllerBase
     {
         var menuItem = _context.MenuItems.FirstOrDefault(x => x.Id == id);
         if (menuItem is null)
-            return NotFound();
+            throw new NotFoundException("wrong id");
 
         var food = _context.Foods.FirstOrDefault(x => x.Id == menuItemRequest.FoodId);
         if (food is null)
@@ -64,11 +70,10 @@ public class MenuItemsController : ControllerBase
             return NotFound(menuItemRequest.MenuId);
 
         if (menuItemRequest.Day > menu.EndDate || menuItemRequest.Day < menu.StartDate)
-            throw new Exception("Date is out of menu period!!!");
+            throw new BadRequestException("Date is out of menu period!!!");
 
-        //TODO: Do not allow to delete closed menu if it is a day in past.        
         if (menuItem.Day < menuItemRequest.Day)
-            throw new Exception("Cant change past");
+            throw new BadRequestException("Cant change past");
 
         menuItem.Food = food;
         menuItem.Menu = menu;
@@ -84,18 +89,17 @@ public class MenuItemsController : ControllerBase
     {
         var menu = _context.Menu.FirstOrDefault(x => x.Id == menuItemRequest.MenuId);
         if (menu is null)
-            return NotFound(menuItemRequest.MenuId);
+            throw new NotFoundException("wrong menuid");
 
-        //TODO: Do not allow to add item to closed menu
         if (menu.Status is MenuStatus.Closed)
-            throw new Exception("Closed menu");
+            throw new BadRequestException("Closed menu");
 
         var food = _context.Foods.FirstOrDefault(x => x.Id == menuItemRequest.FoodId);
         if (food is null)
-            return NotFound(menuItemRequest.FoodId);
+            throw new NotFoundException("wrong foodid");
 
         if (menuItemRequest.Day > menu.EndDate || menuItemRequest.Day < menu.StartDate)
-            throw new Exception("Date is out of menu period!!!");
+            throw new BadRequestException("Date is out of menu period!!!");
 
         var menuItem = new MenuItem() {
             IsActive = true,
@@ -113,11 +117,10 @@ public class MenuItemsController : ControllerBase
     {
         var menuItem = await _context.MenuItems.FindAsync(id);
         if (menuItem == null) {
-            return NotFound();
+            throw new NotFoundException("wrong id");
         }
-        //TODO: Do not allow to delete closed menu if it is a day in past.
         if (menuItem.Day < DateTime.Now)
-            throw new Exception("Cant delete past menuItems");
+            throw new BadRequestException("Cant delete past menuItems");
         
         _context.MenuItems.Remove(menuItem);
         await _context.SaveChangesAsync();

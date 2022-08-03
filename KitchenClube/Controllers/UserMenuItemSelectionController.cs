@@ -1,4 +1,5 @@
 ﻿using KitchenClube.Data;
+using KitchenClube.Exceptions;
 using KitchenClube.Requests.UserMenuItemSelection;
 using KitchenClube.Responses;
 
@@ -19,7 +20,12 @@ public class UserMenuItemSelectionController : ControllerBase
     public async Task<ActionResult<IEnumerable<UserMenuItemSelectionResponse>>> GetUserMenuItemSelections()
     {
         return await _context.UserMenuItemSelections
-            .Select(u => new UserMenuItemSelectionResponse(u.Id, u.MenuitemId, u.UserId, u.Vote)).ToListAsync();
+            .Select(u => Todto(u)).ToListAsync();
+    }
+
+    private static UserMenuItemSelectionResponse Todto(UserMenuItemSelection u)
+    {
+        return new UserMenuItemSelectionResponse(u.Id, u.MenuitemId, u.UserId, u.Vote);
     }
 
     [HttpGet("{id}")]
@@ -27,13 +33,10 @@ public class UserMenuItemSelectionController : ControllerBase
     {
         var userMenuItemSelection = await _context.UserMenuItemSelections.FindAsync(id);
 
-        if (userMenuItemSelection == null) {
-            return NotFound();
-        }
-
-        return
-            new UserMenuItemSelectionResponse(userMenuItemSelection.Id,
-            userMenuItemSelection.MenuitemId, userMenuItemSelection.UserId, userMenuItemSelection.Vote);
+        if (userMenuItemSelection == null)
+            throw new NotFoundException("wrong id");
+        
+        return Todto(userMenuItemSelection);
     }
 
     [HttpGet("user/{userId}")]
@@ -55,21 +58,19 @@ public class UserMenuItemSelectionController : ControllerBase
     {
         var userMenuItemSelection = _context.UserMenuItemSelections.FirstOrDefault(u => u.Id == id);
         if (userMenuItemSelection is null)
-            return NotFound(id);
+            throw new NotFoundException("wrong id");
 
-        //TODO: Do not allow to change if menu item day in past.
         var menuItem = _context.MenuItems.Where(m => m.Id == userMenuItemSelection.MenuitemId).FirstOrDefault();
         if (menuItem.Day < DateTime.Now)
-            throw new Exception("Cant change past menu selections");
+            throw new BadRequestException("Cant change past menu selections");
 
         var user = _context.Users.FirstOrDefault(u => u.Id == updateUserMenuItemSelection.UserId);
-        if (user is null) {
-            return NotFound(updateUserMenuItemSelection.UserId);
-        }
+        if (user is null)
+            throw new NotFoundException("wrong userid");
 
         var menuitem = _context.MenuItems.FirstOrDefault(m => m.Id == updateUserMenuItemSelection.MenuitemId);
         if (menuitem is null)
-            return NotFound(updateUserMenuItemSelection.MenuitemId);
+            throw new NotFoundException("wrong MenuitemId");
 
         userMenuItemSelection.User = user;
         userMenuItemSelection.Menuitem = menuitem;
@@ -86,15 +87,14 @@ public class UserMenuItemSelectionController : ControllerBase
     {
         var user = _context.Users.FirstOrDefault(u => u.Id == createUserMenuItemSelection.UserId);
         if (user == null)
-            return NotFound(createUserMenuItemSelection.UserId);
+            throw new NotFoundException("wrong UserId");
 
         var menuItem = _context.MenuItems.FirstOrDefault(m => m.Id == createUserMenuItemSelection.MenuitemId);
         if (menuItem == null)
             return NotFound(createUserMenuItemSelection.MenuitemId);
 
-        //TODO: Do not allow to add if menu item day in past.
         if (menuItem.Day < DateTime.Now)
-            throw new Exception("Day is out");
+            throw new BadRequestException("Day is out");
 
         var userMenuItemSelection = new UserMenuItemSelection();
         userMenuItemSelection.User = user;
@@ -111,12 +111,11 @@ public class UserMenuItemSelectionController : ControllerBase
     public async Task<IActionResult> DeleteUserMenuItemSelection(Guid id)
     {
         var userMenuItemSelection = await _context.UserMenuItemSelections.FindAsync(id);
-        if (userMenuItemSelection == null) {
-            return NotFound();
-        }
-        //TODO: Do not allow to delete if menu item day in past.
+        if (userMenuItemSelection == null)
+            throw new NotFoundException("wrong id");
+        
         if (userMenuItemSelection.Menuitem.Day < DateTime.Now)
-            throw new Exception("Cant delete past menu selection");
+            throw new BadRequestException("Cant delete past menu selection");
 
         _context.UserMenuItemSelections.Remove(userMenuItemSelection);
         await _context.SaveChangesAsync();
