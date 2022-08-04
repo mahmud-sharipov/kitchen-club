@@ -19,6 +19,7 @@ var builder = WebApplication.CreateBuilder(args);
         options.UseLazyLoadingProxies();
     });
 
+    builder.Services.AddScoped<IFoodService, FoodService>();
 
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
