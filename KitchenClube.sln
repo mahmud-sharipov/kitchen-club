@@ -3,7 +3,12 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32602.215
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KitchenClube", "KitchenClube\KitchenClube.csproj", "{128CEEDC-79E4-41B8-9626-E0854E8BA02D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KitchenClube", "KitchenClube\KitchenClube.csproj", "{128CEEDC-79E4-41B8-9626-E0854E8BA02D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DC716122-C235-4E22-9D95-00F49E1965F0}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
