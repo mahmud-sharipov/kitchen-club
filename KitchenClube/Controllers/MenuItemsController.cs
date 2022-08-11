@@ -1,130 +1,59 @@
-﻿using KitchenClube.Data;
-using KitchenClube.Exceptions;
-using KitchenClube.Requests.MenuItem;
-using KitchenClube.Responses;
-
-namespace KitchenClube.Controllers;
+﻿namespace KitchenClube.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
 public class MenuItemsController : ControllerBase
 {
-    private readonly KitchenClubContext _context;
-
-    public MenuItemsController(KitchenClubContext context)
+    private readonly IMenuItemService _menuItemService;
+ 
+    public MenuItemsController(IMenuItemService menuItemService)
     {
-        _context = context;
+        _menuItemService = menuItemService;        
     }
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<MenuItemResponse>>> GetMenuItems()
     {
-        return await _context.MenuItems
-            .Select(m => Todto(m)).ToListAsync();
+        return Ok(await _menuItemService.GetAllAsync());
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<MenuItemResponse>> GetMenuItem(Guid id)
     {
-        var menuItem = await _context.MenuItems.FindAsync(id);
-
-        if (menuItem == null)
-            throw new NotFoundException(nameof(MenuItem),id);
-
-        return
-            Todto(menuItem);
+        return Ok(await _menuItemService.GetAsync(id));
     }
 
-    private static MenuItemResponse Todto(MenuItem menuItem)
-    {
-        return new MenuItemResponse(menuItem.Id, menuItem.Day, menuItem.FoodId, menuItem.MenuId, menuItem.IsActive);
-    }
-
+   
     [HttpGet("menu/{menuId}")]
     public async Task<ActionResult<IEnumerable<MenuItemResponse>>> GetMenuItemsByMenuId(Guid menuId)
     {
-        return await _context.MenuItems.Where(mi => mi.MenuId == menuId)
-            .Select(m => new MenuItemResponse(m.Id, m.Day, m.FoodId, m.MenuId, m.IsActive)).ToListAsync();
+        return Ok(await _menuItemService.MenuItemsByMenuId(menuId));
     }
 
     [HttpGet("food/{foodId}")]
     public async Task<ActionResult<IEnumerable<MenuItemResponse>>> GetMenuItemsByFoodId(Guid foodId)
     {
-        return await _context.MenuItems.Where(mi => mi.FoodId == foodId)
-            .Select(m => new MenuItemResponse(m.Id, m.Day, m.FoodId, m.MenuId, m.IsActive)).ToListAsync();
+        return Ok(await _menuItemService.MenuItemsByFoodId(foodId));
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutMenuItem(Guid id, UpdateMenuItemRequest menuItemRequest)
+    public async Task<IActionResult> PutMenuItem(Guid id, UpdateMenuItem updateMenuItem)
     {
-        var menuItem = _context.MenuItems.FirstOrDefault(x => x.Id == id);
-        if (menuItem is null)
-            throw new NotFoundException(nameof(MenuItem),id);
-
-        var food = _context.Foods.FirstOrDefault(x => x.Id == menuItemRequest.FoodId);
-        if (food is null)
-            throw new NotFoundException(nameof(Food), menuItemRequest.FoodId);
-
-        var menu = _context.Menu.FirstOrDefault(x => x.Id == menuItemRequest.MenuId);
-        if (menu is null)
-            throw new NotFoundException(nameof(Menu), menuItemRequest.MenuId);
-
-        if (menuItemRequest.Day > menu.EndDate || menuItemRequest.Day < menu.StartDate)
-            throw new BadRequestException("Date is out of menu period!");
-
-        if (menuItem.Day < menuItemRequest.Day)
-            throw new BadRequestException("Can not change the date of the past menu.");
-
-        menuItem.Food = food;
-        menuItem.Menu = menu;
-        menuItem.Day = menuItemRequest.Day;
-        menuItem.IsActive = menuItemRequest.IsActive;
-        _context.MenuItems.Update(menuItem);
-        await _context.SaveChangesAsync();
+        await _menuItemService.UpdateAsync(id, updateMenuItem);
         return NoContent();
     }
 
     [HttpPost]
-    public async Task<ActionResult<MenuItem>> PostMenuItem(CreateMenuItemRequest menuItemRequest)
+    public async Task<ActionResult<MenuItem>> PostMenuItem(CreateMenuItem createMenuItem)
     {
-        var menu = _context.Menu.FirstOrDefault(x => x.Id == menuItemRequest.MenuId);
-        if (menu is null)
-            throw new NotFoundException(nameof(Menu), menuItemRequest.MenuId);
-
-        if (menu.Status is MenuStatus.Closed)
-            throw new BadRequestException("Can not create menuitem because menu is closed.");
-
-        var food = _context.Foods.FirstOrDefault(x => x.Id == menuItemRequest.FoodId);
-        if (food is null)
-            throw new NotFoundException(nameof(Food),menuItemRequest.FoodId);
-
-        if (menuItemRequest.Day > menu.EndDate || menuItemRequest.Day < menu.StartDate)
-            throw new BadRequestException("Date is out of menu period!");
-
-        var menuItem = new MenuItem() {
-            IsActive = true,
-            Food = food,
-            Menu = menu,
-            Day = menuItemRequest.Day,
-        };
-        _context.MenuItems.Add(menuItem);
-        await _context.SaveChangesAsync();
+        var menuItem = await _menuItemService.CreateAsync(createMenuItem);
         return CreatedAtAction("GetMenuItem", new { id = menuItem.Id }, menuItem);
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteMenuItem(Guid id)
     {
-        var menuItem = await _context.MenuItems.FindAsync(id);
-        if (menuItem == null) {
-            throw new NotFoundException(nameof(MenuItem),id);
-        }
-        if (menuItem.Day < DateTime.Now)
-            throw new BadRequestException("Can not delete, because menuitem's day in past");
-
-        _context.MenuItems.Remove(menuItem);
-        await _context.SaveChangesAsync();
-
+        await _menuItemService.DeleteAsync(id);
         return NoContent();
     }
 }

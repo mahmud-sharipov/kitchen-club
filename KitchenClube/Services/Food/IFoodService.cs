@@ -1,8 +1,7 @@
 ﻿namespace KitchenClube.Services;
-
 public interface IFoodService
 {
-    Task<IEnumerable<FoodResponse>> GetAllAsync();
+    Task <IEnumerable<FoodResponse>> GetAllAsync();
 
     Task<FoodResponse> GetAsync(Guid id);
 

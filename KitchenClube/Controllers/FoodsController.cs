@@ -4,7 +4,6 @@
 [ApiController]
 public class FoodsController : ControllerBase
 {
-    private readonly KitchenClubContext _context;
     private readonly IFoodService _foodService;
 
     public FoodsController(IFoodService foodService)

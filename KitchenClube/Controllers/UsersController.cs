@@ -1,89 +1,46 @@
-﻿using KitchenClube.Data;
-using KitchenClube.Exceptions;
-using KitchenClube.Requests.User;
-using KitchenClube.Responses;
-
-namespace KitchenClube.Controllers
+﻿namespace KitchenClube.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly KitchenClubContext _context;
+        private readonly IUserService _userService;
 
-        public UsersController(KitchenClubContext context)
+        public UsersController(IUserService userService)
         {
-            _context = context;
+            _userService = userService;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<UserResponse>>> GetUsers()
         {
-            return await _context.Users
-                .Select(u => new UserResponse(u.Id, u.FullName, u.PhoneNumber, u.Email, u.IsActive))
-                .ToListAsync();
+            return Ok(await _userService.GetAllAsync());
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<UserResponse>> GetUser(Guid id)
         {
-            var user = await _context.Users.FindAsync(id);
-
-            if (user == null)
-                throw new NotFoundException(nameof(User), id);
-
-            return new UserResponse(user.Id, user.FullName, user.PhoneNumber, user.Email, user.IsActive);
+            return Ok(await _userService.GetAsync(id));
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> PutUser(Guid id, UpdateUser updateUser)
         {
-            var user = _context.Users.FirstOrDefault(u => u.Id == id);
-            if (user is null)
-                throw new NotFoundException(nameof(User),id);
-            
-            user.FullName = updateUser.FullName;
-            user.PhoneNumber = updateUser.PhoneNumber;
-            user.IsActive = updateUser.IsActive;
-
-            _context.Users.Update(user);
-            await _context.SaveChangesAsync();
-
+            await _userService.UpdateAsync(id,updateUser);
             return NoContent();
         }
 
         [HttpPost]
         public async Task<ActionResult<UserResponse>> PostUser(CreateUser createUser)
         {
-            var email = createUser.Email.ToLower();
-            if (_context.Users.Any(u => u.Email.ToLower() == email))
-                throw new BadRequestException("User with this email is already regitered");
-
-            var user = new User();
-            user.FullName = createUser.FullName;
-            user.Email = createUser.Email;
-            user.IsActive = true;
-            user.PhoneNumber = createUser.PhoneNumber;
-            user.PasswordHash = createUser.Password;
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-
+            var user = await _userService.CreateAsync(createUser);
             return CreatedAtAction("GetUser", new { id = user.Id }, user);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(Guid id)
         {
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
-                throw new NotFoundException(nameof(user),id);
-
-            if (_context.UserMenuItemSelections.Any(u => u.UserId == id))
-                throw new BadRequestException("User can not be deleted because he/she has made menu selections");
-
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
-
+            await _userService.DeleteAsync(id);
             return NoContent();
         }
     }

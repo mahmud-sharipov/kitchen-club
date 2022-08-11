@@ -24,19 +24,6 @@ public class FoodService : IFoodService
         return ToDto(food);
     }
 
-    public async Task<FoodResponse> CreateAsync(CreateFood createFood)
-    {
-        var food = new Food();
-        food.Name = createFood.Name;
-        food.Description = createFood.Description;
-        food.Image = createFood.Image;
-        food.IsActive = true;
-
-        _context.Foods.Add(food);
-        await _context.SaveChangesAsync();
-        return ToDto(food);
-    }
-
     public async Task UpdateAsync(Guid id, UpdateFood updateFood)
     {
         var food = _context.Foods.FirstOrDefault(x => x.Id == id);
@@ -51,6 +38,19 @@ public class FoodService : IFoodService
 
         _context.Foods.Update(food);
         await _context.SaveChangesAsync();
+    }
+
+    public async Task<FoodResponse> CreateAsync(CreateFood createFood)
+    {
+        var food = new Food();
+        food.Name = createFood.Name;
+        food.Description = createFood.Description;
+        food.Image = createFood.Image;
+        food.IsActive = true;
+
+        _context.Foods.Add(food);
+        await _context.SaveChangesAsync();
+        return ToDto(food);
     }
 
     public async Task DeleteAsync(Guid id)
