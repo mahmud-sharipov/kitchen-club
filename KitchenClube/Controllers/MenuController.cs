@@ -2,6 +2,7 @@
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize]
 public class MenuController : ControllerBase
 {
     private readonly IMenuService _menuService;
@@ -56,7 +57,7 @@ public class MenuController : ControllerBase
         return CreatedAtAction("GetMenu", new { id = menu.Id }, menu);
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{id}"), Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteMenu(Guid id)
     {
         await _menuService.DeleteAsync(id);

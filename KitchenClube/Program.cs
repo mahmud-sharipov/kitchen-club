@@ -1,5 +1,5 @@
-using KitchenClube.MiddleWare;
-using KitchenClube.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Swashbuckle.AspNetCore.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,7 +27,31 @@ var builder = WebApplication.CreateBuilder(args);
 
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
+    builder.Services.AddSwaggerGen(options =>
+    {
+        options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+        {
+            Description = "Description",
+            In = ParameterLocation.Header,
+            Name = "Authorization",
+            Type = SecuritySchemeType.ApiKey
+        });
+
+        options.OperationFilter<SecurityRequirementsOperationFilter>();
+    });
+
+    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8
+                .GetBytes(builder.Configuration.GetSection("AppSettings:Token").Value)),
+                ValidateIssuer = false,
+                ValidateAudience = false
+            };
+        });
 }
 
 var app = builder.Build();
@@ -42,6 +66,10 @@ app.UseMiddleware<ExceptionMiddleware>();
     }
 
     app.UseHttpsRedirection();
+
+    app.UseAuthentication();
+
+    app.UseAuthorization();
 
     app.MapControllers();
 

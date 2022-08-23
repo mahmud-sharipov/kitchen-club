@@ -3,9 +3,11 @@
 public class UserService : IUserService
 {
     private readonly KitchenClubContext _context;
-    public UserService(KitchenClubContext context)
+    private readonly IConfiguration _configuration;
+    public UserService(KitchenClubContext context, IConfiguration configuration)
     {
         _context = context;
+        _configuration = configuration;
     }
     public async Task<IEnumerable<UserResponse>> GetAllAsync()
     {
@@ -38,6 +40,10 @@ public class UserService : IUserService
     public async Task<UserResponse> CreateAsync(CreateUser createUser)
     {
         var email = createUser.Email.ToLower();
+
+        if (!Regex.IsMatch(email, @"\A(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)\Z", RegexOptions.IgnoreCase))
+            throw new BadRequestException("Can not login because your email is wrong");
+
         if (_context.Users.Any(u => u.Email.ToLower() == email))
             throw new BadRequestException("User with this email is already regitered");
 
@@ -46,11 +52,19 @@ public class UserService : IUserService
         user.Email = createUser.Email;
         user.IsActive = true;
         user.PhoneNumber = createUser.PhoneNumber;
-        user.PasswordHash = createUser.Password;
+        user.PasswordHash = CreatePasswordHash(createUser.Password);
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
         return Todto(user);
+    }
 
+    private string CreatePasswordHash(string password)
+    {
+        var salt = Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Salt").Value);
+        using (var hmac = new HMACSHA512(salt))
+        {
+            return Encoding.UTF8.GetString(hmac.ComputeHash(Encoding.UTF8.GetBytes(password)));
+        }
     }
 
     public async Task DeleteAsync(Guid id)

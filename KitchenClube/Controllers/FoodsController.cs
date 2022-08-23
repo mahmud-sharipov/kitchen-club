@@ -2,6 +2,7 @@
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize]
 public class FoodsController : ControllerBase
 {
     private readonly IFoodService _foodService;
@@ -33,7 +34,7 @@ public class FoodsController : ControllerBase
         return CreatedAtAction("GetFood", new { id = food.Id }, food);
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{id}"), Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteFood(Guid id)
     {
         await _foodService.DeleteAsync(id);
