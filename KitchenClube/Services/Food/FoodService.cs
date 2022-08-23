@@ -1,13 +1,8 @@
 ﻿namespace KitchenClube.Services;
 
-public class FoodService : IFoodService
+public class FoodService : ServiceBace<Food>, IFoodService
 {
-    private readonly KitchenClubContext _context;
-
-    public FoodService(KitchenClubContext context)
-    {
-        _context = context;
-    }
+    public FoodService(KitchenClubContext context) : base(context, context.Foods) { }
 
     public async Task<IEnumerable<FoodResponse>> GetAllAsync()
     {
@@ -16,12 +11,7 @@ public class FoodService : IFoodService
 
     public async Task<FoodResponse> GetAsync(Guid id)
     {
-        var food = await _context.Foods.FindAsync(id);
-
-        if (food == null)
-            throw new NotFoundException(nameof(Food), id);
-
-        return ToDto(food);
+        return ToDto(await FindAsync(id));
     }
 
     public async Task UpdateAsync(Guid id, UpdateFood updateFood)
