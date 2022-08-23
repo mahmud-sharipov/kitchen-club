@@ -1,29 +1,19 @@
 ﻿namespace KitchenClube.Services;
 
-public class MenuItemService : IMenuItemService
+public class MenuItemService : ServiceBace<MenuItem>, IMenuItemService
 {
-    private readonly KitchenClubContext _context;
-    public MenuItemService(KitchenClubContext context)
-    {
-        _context = context;
-    }
+    public MenuItemService(KitchenClubContext context) : base(context,context.MenuItems){}
 
     public async Task<IEnumerable<MenuItemResponse>> GetAllAsync()
     {
-        return await _context.MenuItems
-            .Select(m => Todto(m)).ToListAsync();
+        return await _context.MenuItems.Select(m => Todto(m)).ToListAsync();
     }
 
     public async Task<MenuItemResponse> GetAsync(Guid id)
     {
-        var menuItem = await _context.MenuItems.FindAsync(id);
-
-        if (menuItem == null)
-            throw new NotFoundException(nameof(MenuItem), id);
-
-        return
-            Todto(menuItem);
+        return Todto(await FindAsync(id));
     }
+
     public async Task<IEnumerable<MenuItemResponse>> MenuItemsByMenuId(Guid menuId)
     {
         return await _context.MenuItems.Where(mi => mi.MenuId == menuId)
@@ -38,9 +28,7 @@ public class MenuItemService : IMenuItemService
 
     public async Task UpdateAsync(Guid id, UpdateMenuItem updateMenuItem)
     {
-        var menuItem = _context.MenuItems.FirstOrDefault(x => x.Id == id);
-        if (menuItem is null)
-            throw new NotFoundException(nameof(MenuItem), id);
+        var menuItem = await FindAsync(id);
 
         var food = _context.Foods.FirstOrDefault(x => x.Id == updateMenuItem.FoodId);
         if (food is null)
@@ -94,11 +82,8 @@ public class MenuItemService : IMenuItemService
 
     public async Task DeleteAsync(Guid id)
     {
-        var menuItem = await _context.MenuItems.FindAsync(id);
-        if (menuItem == null)
-        {
-            throw new NotFoundException(nameof(MenuItem), id);
-        }
+        var menuItem = await FindAsync(id);
+
         if (menuItem.Day < DateTime.Now)
             throw new BadRequestException("Can not delete, because menuitem's day in past");
 
