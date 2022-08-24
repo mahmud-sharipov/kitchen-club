@@ -1,6 +1,6 @@
 ﻿namespace KitchenClube.Requests.MenuItem;
 
-public class CreateMenuItemRequest
+public class CreateMenuItem
 {
     public DateTime Day { get; set; }
     public Guid FoodId { get; set; }
