@@ -1,13 +1,9 @@
 ﻿namespace KitchenClube.Services;
 
-public class UserMenuItemSelectionService : IUserMenuItemSelectionService
+public class UserMenuItemSelectionService : ServiceBace<UserMenuItemSelection>, IUserMenuItemSelectionService
 {
-    private readonly KitchenClubContext _context;
+    public UserMenuItemSelectionService(KitchenClubContext context):base(context,context.UserMenuItemSelections) {}
 
-    public UserMenuItemSelectionService(KitchenClubContext context)
-    {
-        _context = context;
-    }
     public async Task<IEnumerable<UserMenuItemSelectionResponse>> GetAllAsync()
     {
         return await _context.UserMenuItemSelections
@@ -16,13 +12,9 @@ public class UserMenuItemSelectionService : IUserMenuItemSelectionService
 
     public async Task<UserMenuItemSelectionResponse> GetAsync(Guid id)
     {
-        var userMenuItemSelection = await _context.UserMenuItemSelections.FindAsync(id);
-
-        if (userMenuItemSelection == null)
-            throw new NotFoundException(nameof(UserMenuItemSelection), id);
-
-        return Todto(userMenuItemSelection);
+        return Todto(await FindAsync(id));
     }
+
     public async Task<IEnumerable<UserMenuItemSelectionResponse>> UserMenuItemSelectionsByUserId(Guid userId)
     {
         return await _context.UserMenuItemSelections.Where(u => u.UserId == userId)
@@ -37,9 +29,7 @@ public class UserMenuItemSelectionService : IUserMenuItemSelectionService
 
     public async Task UpdateAsync(Guid id, UpdateUserMenuItemSelection updateUserMenuItemSelection)
     {
-        var userMenuItemSelection = _context.UserMenuItemSelections.FirstOrDefault(u => u.Id == id);
-        if (userMenuItemSelection is null)
-            throw new NotFoundException(nameof(UserMenuItemSelection), id);
+        var userMenuItemSelection = await FindAsync(id);
 
         var menuItem = _context.MenuItems.Where(m => m.Id == userMenuItemSelection.MenuitemId).FirstOrDefault();
         if (menuItem.Day < DateTime.Now)
@@ -80,10 +70,12 @@ public class UserMenuItemSelectionService : IUserMenuItemSelectionService
         if (menuItem.Day < DateTime.Now)
             throw new BadRequestException("Can not add user selection because menuitem's day in past");
 
-        var userMenuItemSelection = new UserMenuItemSelection();
-        userMenuItemSelection.User = user;
-        userMenuItemSelection.Menuitem = menuItem;
-        userMenuItemSelection.Vote = createUserMenuItemSelection.Vote;
+        var userMenuItemSelection = new UserMenuItemSelection
+        {
+            User = user,
+            Menuitem = menuItem,
+            Vote = createUserMenuItemSelection.Vote
+        };
 
         _context.UserMenuItemSelections.Add(userMenuItemSelection);
         await _context.SaveChangesAsync();
@@ -92,9 +84,7 @@ public class UserMenuItemSelectionService : IUserMenuItemSelectionService
 
     public async Task DeleteAsync(Guid id)
     {
-        var userMenuItemSelection = await _context.UserMenuItemSelections.FindAsync(id);
-        if (userMenuItemSelection == null)
-            throw new NotFoundException(nameof(UserMenuItemSelection), id);
+        var userMenuItemSelection = await FindAsync(id);
 
         if (userMenuItemSelection.Menuitem.Day < DateTime.Now)
             throw new BadRequestException("Past user menu selections can not be deleted!");

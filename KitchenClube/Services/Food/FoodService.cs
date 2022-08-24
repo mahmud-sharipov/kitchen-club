@@ -2,7 +2,7 @@
 
 public class FoodService : ServiceBace<Food>, IFoodService
 {
-    public FoodService(KitchenClubContext context) : base(context, context.Foods) { }
+    public FoodService(KitchenClubContext context):base(context,context.Foods) {}
 
     public async Task<IEnumerable<FoodResponse>> GetAllAsync()
     {
@@ -16,10 +16,7 @@ public class FoodService : ServiceBace<Food>, IFoodService
 
     public async Task UpdateAsync(Guid id, UpdateFood updateFood)
     {
-        var food = _context.Foods.FirstOrDefault(x => x.Id == id);
-
-        if (food is null)
-            throw new NotFoundException(nameof(Food), id);
+        var food = await FindAsync(id);
 
         food.IsActive = updateFood.IsActive;
         food.Name = updateFood.Name;
@@ -32,11 +29,13 @@ public class FoodService : ServiceBace<Food>, IFoodService
 
     public async Task<FoodResponse> CreateAsync(CreateFood createFood)
     {
-        var food = new Food();
-        food.Name = createFood.Name;
-        food.Description = createFood.Description;
-        food.Image = createFood.Image;
-        food.IsActive = true;
+        var food = new Food
+        {
+            Name = createFood.Name,
+            Description = createFood.Description,
+            Image = createFood.Image,
+            IsActive = true
+        };
 
         _context.Foods.Add(food);
         await _context.SaveChangesAsync();
@@ -45,9 +44,7 @@ public class FoodService : ServiceBace<Food>, IFoodService
 
     public async Task DeleteAsync(Guid id)
     {
-        var food = await _context.Foods.FindAsync(id);
-        if (food == null)
-            throw new NotFoundException(nameof(Food), id);
+        var food = await FindAsync(id);
 
         if (_context.MenuItems.Any(mi => mi.FoodId == id))
             throw new BadRequestException("Food cannot be deleted because it is used on some menu items!");

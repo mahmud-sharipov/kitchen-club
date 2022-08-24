@@ -14,10 +14,6 @@ public class ServiceBace<TEntity> where TEntity : BaseEntity
     protected async Task<TEntity> FindAsync(Guid id)
     {
         var food = await _dbSet.FindAsync(id);
-        //TODO: Review and remove
-        //if (food == null)
-        //    throw new NotFoundException(nameof(Food), id);
-
         return food ?? throw new NotFoundException(nameof(Food), id);
     }
 }

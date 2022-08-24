@@ -1,12 +1,8 @@
 ﻿namespace KitchenClube.Services;
 
-public class UserService : IUserService
+public class UserService : ServiceBace<User>, IUserService
 {
-    private readonly KitchenClubContext _context;
-    public UserService(KitchenClubContext context)
-    {
-        _context = context;
-    }
+    public UserService(KitchenClubContext context):base(context,context.Users) {}
     public async Task<IEnumerable<UserResponse>> GetAllAsync()
     {
         return await _context.Users.Select(u => Todto(u)).ToListAsync();
@@ -14,19 +10,12 @@ public class UserService : IUserService
 
     public async Task<UserResponse> GetAsync(Guid id)
     {
-        var user = await _context.Users.FindAsync(id);
-
-        if (user == null)
-            throw new NotFoundException(nameof(User), id);
-
-        return Todto(user);
+        return Todto(await FindAsync(id));
     }
 
     public async Task UpdateAsync(Guid id, UpdateUser updateUser)
     {
-        var user = _context.Users.FirstOrDefault(u => u.Id == id);
-        if (user is null)
-            throw new NotFoundException(nameof(User), id);
+        var user = await FindAsync(id);
 
         user.FullName = updateUser.FullName;
         user.PhoneNumber = updateUser.PhoneNumber;
@@ -41,12 +30,14 @@ public class UserService : IUserService
         if (_context.Users.Any(u => u.Email.ToLower() == email))
             throw new BadRequestException("User with this email is already regitered");
 
-        var user = new User();
-        user.FullName = createUser.FullName;
-        user.Email = createUser.Email;
-        user.IsActive = true;
-        user.PhoneNumber = createUser.PhoneNumber;
-        user.PasswordHash = createUser.Password;
+        var user = new User
+        {
+            FullName = createUser.FullName,
+            Email = createUser.Email,
+            IsActive = true,
+            PhoneNumber = createUser.PhoneNumber,
+            PasswordHash = createUser.Password
+        };
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
         return Todto(user);
@@ -55,9 +46,7 @@ public class UserService : IUserService
 
     public async Task DeleteAsync(Guid id)
     {
-        var user = await _context.Users.FindAsync(id);
-        if (user == null)
-            throw new NotFoundException(nameof(user), id);
+        var user = await FindAsync(id);
 
         if (_context.UserMenuItemSelections.Any(u => u.UserId == id))
             throw new BadRequestException("User can not be deleted because he/she has made menu selections");
