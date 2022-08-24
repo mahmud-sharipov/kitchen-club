@@ -5,7 +5,7 @@ public class AuthController : ControllerBase
 {
     private readonly IConfiguration _configuration;
     private readonly KitchenClubContext _context;
-    
+
     public AuthController(IConfiguration configuration, KitchenClubContext context)
     {
         _configuration = configuration;
@@ -46,12 +46,10 @@ public class AuthController : ControllerBase
         {
             Subject = new ClaimsIdentity(new[]
             {
-                new Claim("Id", user.Id.ToString()),
+                new Claim(ClaimTypes.Sid, user.Id.ToString()),
             }),
-            Expires = DateTime.UtcNow.AddMinutes(5),
-            SigningCredentials = new SigningCredentials
-            (new SymmetricSecurityKey(key),
-            SecurityAlgorithms.HmacSha512Signature)
+            Expires = DateTime.UtcNow.AddHours(10),
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha512Signature)
         };
         var tokenHandler = new JwtSecurityTokenHandler();
         var securityToken = tokenHandler.CreateToken(tokenDescriptor);
