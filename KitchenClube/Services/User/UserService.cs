@@ -1,14 +1,13 @@
 ﻿namespace KitchenClube.Services;
 
-public class UserService : IUserService
+public class UserService : ServiceBace<User>, IUserService
 {
-    private readonly KitchenClubContext _context;
     private readonly IConfiguration _configuration;
-    public UserService(KitchenClubContext context, IConfiguration configuration)
+    public UserService(KitchenClubContext context, IConfiguration configuration) : base(context, context.Users)
     {
-        _context = context;
         _configuration = configuration;
     }
+
     public async Task<IEnumerable<UserResponse>> GetAllAsync()
     {
         return await _context.Users.Select(u => Todto(u)).ToListAsync();
@@ -16,19 +15,12 @@ public class UserService : IUserService
 
     public async Task<UserResponse> GetAsync(Guid id)
     {
-        var user = await _context.Users.FindAsync(id);
-
-        if (user == null)
-            throw new NotFoundException(nameof(User), id);
-
-        return Todto(user);
+        return Todto(await FindOrThrowExceptionAsync(id));
     }
 
     public async Task UpdateAsync(Guid id, UpdateUser updateUser)
     {
-        var user = _context.Users.FirstOrDefault(u => u.Id == id);
-        if (user is null)
-            throw new NotFoundException(nameof(User), id);
+        var user = await FindOrThrowExceptionAsync(id);
 
         user.FullName = updateUser.FullName;
         user.PhoneNumber = updateUser.PhoneNumber;
@@ -69,9 +61,7 @@ public class UserService : IUserService
 
     public async Task DeleteAsync(Guid id)
     {
-        var user = await _context.Users.FindAsync(id);
-        if (user == null)
-            throw new NotFoundException(nameof(user), id);
+        var user = await FindOrThrowExceptionAsync(id);
 
         if (_context.UserMenuItemSelections.Any(u => u.UserId == id))
             throw new BadRequestException("User can not be deleted because he/she has made menu selections");

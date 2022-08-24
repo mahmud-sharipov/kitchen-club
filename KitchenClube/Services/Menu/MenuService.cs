@@ -1,31 +1,21 @@
 ﻿namespace KitchenClube.Services;
-public class MenuService : IMenuService
+public class MenuService : ServiceBace<Menu>, IMenuService
 {
-    private readonly KitchenClubContext _context;
-    public MenuService(KitchenClubContext context)
-    {
-        _context = context;
-    }
+    public MenuService(KitchenClubContext context) : base(context,context.Menu){}
+
     public async Task<IEnumerable<MenuResponse>> GetAllAsync()
     {
-        return await _context.Menu
-            .Select(u => ToDto(u)).ToListAsync();
+        return await _context.Menu.Select(u => ToDto(u)).ToListAsync();
     }
 
     public async Task<MenuResponse> GetAsync(Guid id)
     {
-        var menu = await _context.Menu.FindAsync(id);
-
-        if (menu == null)
-            throw new NotFoundException(nameof(Menu), id);
-        return ToDto(menu);
+        return ToDto(await FindOrThrowExceptionAsync(id));
     }
 
     public async Task UpdateAsync(Guid id, UpdateMenu updateMenu)
     {
-        var menu = _context.Menu.Find(id);
-        if (menu is null)
-            throw new NotFoundException(nameof(Menu), id);
+        var menu = await FindOrThrowExceptionAsync(id);
 
         if (updateMenu.StartDate > updateMenu.EndDate)
             throw new BadRequestException("End date must be greater than Start date.");
@@ -48,9 +38,7 @@ public class MenuService : IMenuService
 
     public async Task UpdateStatusCloseAsync(Guid id)
     {
-        var menu = await _context.Menu.FindAsync(id);
-        if (menu is null)
-            throw new NotFoundException(nameof(Menu), id);
+        var menu = await FindOrThrowExceptionAsync(id);
 
         menu.Status = MenuStatus.Closed;
         _context.Update(menu);
@@ -59,9 +47,7 @@ public class MenuService : IMenuService
 
     public async Task UpdateStatusOpenAsync(Guid id)
     {
-        var menu = await _context.Menu.FindAsync(id);
-        if (menu is null)
-            throw new NotFoundException(nameof(Menu), id);
+        var menu = await FindOrThrowExceptionAsync(id);
 
         menu.Status = MenuStatus.Active;
         _context.Update(menu);
@@ -76,10 +62,12 @@ public class MenuService : IMenuService
         if (createMenu.EndDate < createMenu.StartDate)
             throw new BadRequestException("End date must be greater than Start date.");
 
-        var menu = new Menu();
-        menu.StartDate = createMenu.StartDate;
-        menu.EndDate = createMenu.EndDate;
-        menu.Status = MenuStatus.Draft;
+        var menu = new Menu
+        {
+            StartDate = createMenu.StartDate,
+            EndDate = createMenu.EndDate,
+            Status = MenuStatus.Draft
+        };
         _context.Menu.Add(menu);
 
         await _context.SaveChangesAsync();
@@ -88,9 +76,7 @@ public class MenuService : IMenuService
 
     public async Task DeleteAsync(Guid id)
     {
-        var menu = await _context.Menu.FindAsync(id);
-        if (menu == null)
-            throw new NotFoundException(nameof(Menu), id);
+        var menu = await FindOrThrowExceptionAsync(id);
 
         if (menu.Status is MenuStatus.Closed)
             throw new BadRequestException("Сan not delete because menu is closed.");
