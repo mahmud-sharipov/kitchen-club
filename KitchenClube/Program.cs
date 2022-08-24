@@ -40,18 +40,24 @@ var builder = WebApplication.CreateBuilder(args);
         options.OperationFilter<SecurityRequirementsOperationFilter>();
     });
 
-    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
         .AddJwtBearer(options =>
         {
             options.TokenValidationParameters = new TokenValidationParameters
             {
-                ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8
                 .GetBytes(builder.Configuration.GetSection("AppSettings:Token").Value)),
                 ValidateIssuer = false,
-                ValidateAudience = false
+                ValidateAudience = false,
+                ValidateIssuerSigningKey = true
             };
         });
+    builder.Services.AddAuthorization();
 }
 
 var app = builder.Build();
@@ -68,7 +74,6 @@ app.UseMiddleware<ExceptionMiddleware>();
     app.UseHttpsRedirection();
 
     app.UseAuthentication();
-
     app.UseAuthorization();
 
     app.MapControllers();

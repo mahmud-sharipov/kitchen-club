@@ -13,7 +13,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public ActionResult<string> Login(LoginUser loginUser)
+    public ActionResult<LoginResponse> Login(LoginUser loginUser)
     {
         if (!Regex.IsMatch(loginUser.Email, @"\A(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)\Z", RegexOptions.IgnoreCase))
             throw new BadRequestException("Can not login because your email is wrong");
@@ -26,7 +26,7 @@ public class AuthController : ControllerBase
             throw new BadRequestException("Can not login because your password is incorrect");
 
         var token = CreateToken(user);
-        return Ok(token);
+        return Ok(new LoginResponse(token));
     }
 
     private bool VerifyPassword(string password, string passwordHash)
@@ -41,25 +41,21 @@ public class AuthController : ControllerBase
 
     private string CreateToken(User user)
     {
-        var claims = new List<Claim>()
+        var key = Encoding.ASCII.GetBytes(_configuration["AppSettings:Token"]);
+        var tokenDescriptor = new SecurityTokenDescriptor
         {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+            Subject = new ClaimsIdentity(new[]
+            {
+                new Claim("Id", user.Id.ToString()),
+            }),
+            Expires = DateTime.UtcNow.AddMinutes(5),
+            SigningCredentials = new SigningCredentials
+            (new SymmetricSecurityKey(key),
+            SecurityAlgorithms.HmacSha512Signature)
         };
-
-        var key = new SymmetricSecurityKey(Encoding.UTF8
-            .GetBytes(_configuration.GetSection("AppSettings:Token").Value));
-
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
-
-        var token = new JwtSecurityToken
-            (
-                claims: claims,
-                expires: DateTime.Now.AddMinutes(15),
-                signingCredentials: creds
-            );
-
-        var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-
-        return jwt;
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var securityToken = tokenHandler.CreateToken(tokenDescriptor);
+        var token = tokenHandler.WriteToken(securityToken);
+        return token;
     }
 }
