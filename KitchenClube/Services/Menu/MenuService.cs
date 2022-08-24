@@ -10,12 +10,12 @@ public class MenuService : ServiceBace<Menu>, IMenuService
 
     public async Task<MenuResponse> GetAsync(Guid id)
     {
-        return ToDto(await FindAsync(id));
+        return ToDto(await FindOrThrowExceptionAsync(id));
     }
 
     public async Task UpdateAsync(Guid id, UpdateMenu updateMenu)
     {
-        var menu = await FindAsync(id);
+        var menu = await FindOrThrowExceptionAsync(id);
 
         if (updateMenu.StartDate > updateMenu.EndDate)
             throw new BadRequestException("End date must be greater than Start date.");
@@ -38,7 +38,7 @@ public class MenuService : ServiceBace<Menu>, IMenuService
 
     public async Task UpdateStatusCloseAsync(Guid id)
     {
-        var menu = await FindAsync(id);
+        var menu = await FindOrThrowExceptionAsync(id);
 
         menu.Status = MenuStatus.Closed;
         _context.Update(menu);
@@ -47,7 +47,7 @@ public class MenuService : ServiceBace<Menu>, IMenuService
 
     public async Task UpdateStatusOpenAsync(Guid id)
     {
-        var menu = await FindAsync(id);
+        var menu = await FindOrThrowExceptionAsync(id);
 
         menu.Status = MenuStatus.Active;
         _context.Update(menu);
@@ -76,7 +76,7 @@ public class MenuService : ServiceBace<Menu>, IMenuService
 
     public async Task DeleteAsync(Guid id)
     {
-        var menu = await FindAsync(id);
+        var menu = await FindOrThrowExceptionAsync(id);
 
         if (menu.Status is MenuStatus.Closed)
             throw new BadRequestException("Сan not delete because menu is closed.");

@@ -11,12 +11,12 @@ public class FoodService : ServiceBace<Food>, IFoodService
 
     public async Task<FoodResponse> GetAsync(Guid id)
     {
-        return ToDto(await FindAsync(id));
+        return ToDto(await FindOrThrowExceptionAsync(id));
     }
 
     public async Task UpdateAsync(Guid id, UpdateFood updateFood)
     {
-        var food = await FindAsync(id);
+        var food = await FindOrThrowExceptionAsync(id);
 
         food.IsActive = updateFood.IsActive;
         food.Name = updateFood.Name;
@@ -44,7 +44,7 @@ public class FoodService : ServiceBace<Food>, IFoodService
 
     public async Task DeleteAsync(Guid id)
     {
-        var food = await FindAsync(id);
+        var food = await FindOrThrowExceptionAsync(id);
 
         if (_context.MenuItems.Any(mi => mi.FoodId == id))
             throw new BadRequestException("Food cannot be deleted because it is used on some menu items!");

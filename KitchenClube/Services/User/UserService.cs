@@ -10,12 +10,12 @@ public class UserService : ServiceBace<User>, IUserService
 
     public async Task<UserResponse> GetAsync(Guid id)
     {
-        return Todto(await FindAsync(id));
+        return Todto(await FindOrThrowExceptionAsync(id));
     }
 
     public async Task UpdateAsync(Guid id, UpdateUser updateUser)
     {
-        var user = await FindAsync(id);
+        var user = await FindOrThrowExceptionAsync(id);
 
         user.FullName = updateUser.FullName;
         user.PhoneNumber = updateUser.PhoneNumber;
@@ -46,7 +46,7 @@ public class UserService : ServiceBace<User>, IUserService
 
     public async Task DeleteAsync(Guid id)
     {
-        var user = await FindAsync(id);
+        var user = await FindOrThrowExceptionAsync(id);
 
         if (_context.UserMenuItemSelections.Any(u => u.UserId == id))
             throw new BadRequestException("User can not be deleted because he/she has made menu selections");
