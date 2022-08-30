@@ -35,21 +35,21 @@ public class UserMenuItemSelectionController : ControllerBase
         return Ok(await _userMenuItemSelection.UserMenuItemSelectionsByMenuitemId(menuitemId));
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("{id}"), Authorize(Policy = "All")]
     public async Task<IActionResult> PutUserMenuItemSelection(Guid id, UpdateUserMenuItemSelection updateUserMenuItemSelection)
     {
         await _userMenuItemSelection.UpdateAsync(id, updateUserMenuItemSelection);
         return NoContent();
     }
 
-    [HttpPost]
+    [HttpPost, Authorize(Policy = "All")]
     public async Task<ActionResult<UserMenuItemSelection>> PostUserMenuItemSelection(CreateUserMenuItemSelection createUserMenuItemSelection)
     {
         var userMenuItemSelection = await _userMenuItemSelection.CreateAsync(createUserMenuItemSelection);
         return CreatedAtAction("GetUserMenuItemSelection", new { id = userMenuItemSelection.Id }, userMenuItemSelection);
     }
 
-    [HttpDelete("{id}"), Authorize(Roles = "Admin")]
+    [HttpDelete("{id}"), Authorize(Policy = "Admin")]
     public async Task<IActionResult> DeleteUserMenuItemSelection(Guid id)
     {
         await _userMenuItemSelection.DeleteAsync(id);

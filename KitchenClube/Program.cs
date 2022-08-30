@@ -1,5 +1,7 @@
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Swashbuckle.AspNetCore.Filters;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,7 +27,23 @@ var builder = WebApplication.CreateBuilder(args);
     builder.Services.AddScoped<IUserMenuItemSelectionService, UserMenuItemSelectionService>();
     builder.Services.AddScoped<IUserService, UserService>();
 
-    builder.Services.AddControllers();
+    builder.Services.AddScoped<IRoleService, RoleService>();
+    builder.Services.AddScoped<IAuthService, AuthService>();
+
+    builder.Services.AddAutoMapper(typeof(Program));
+
+    builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+    builder.Services.AddHttpContextAccessor();
+
+    builder.Services.AddControllers().AddFluentValidation(x =>
+    {
+        x.ImplicitlyValidateChildProperties = true;
+        x.ImplicitlyValidateRootCollectionElements = true;
+
+        x.RegisterValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+    });
+   
+
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen(options =>
     {
@@ -57,8 +75,26 @@ var builder = WebApplication.CreateBuilder(args);
                 ValidateIssuerSigningKey = true
             };
         });
-    builder.Services.AddAuthorization();
+    builder.Services.AddAuthorization(opts =>
+    {
+        opts.AddPolicy("Admin", policy =>
+        {
+            policy.RequireClaim(ClaimTypes.Role, "Admin");
+        });
+
+        opts.AddPolicy("User", policy =>
+        {
+            policy.RequireClaim(ClaimTypes.Role, "User");
+        });
+
+        opts.AddPolicy("All", policy =>
+        {
+            policy.RequireClaim(ClaimTypes.Role, "Admin", "User");
+        });
+    });
 }
+
+
 
 var app = builder.Build();
 

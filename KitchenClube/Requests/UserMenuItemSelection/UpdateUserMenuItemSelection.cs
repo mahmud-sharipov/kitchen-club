@@ -1,11 +1,3 @@
-﻿namespace KitchenClube.Requests.UserMenuItemSelection
-{
-    public class UpdateUserMenuItemSelection
-    {
-        public UserVote Vote { get; set; }
+﻿namespace KitchenClube.Requests.UserMenuItemSelection;
 
-        public Guid MenuitemId { get; set; }
-
-        public Guid UserId { get; set; }
-    }
-}
+public record class UpdateUserMenuItemSelection(UserVote Vote, Guid MenuitemId, Guid UserId);

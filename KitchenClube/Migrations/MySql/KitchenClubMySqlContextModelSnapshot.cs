@@ -44,7 +44,7 @@ namespace KitchenClube.Migrations.MySql
                     b.HasData(
                         new
                         {
-                            Id = new Guid("f12f0134-8043-4cb8-9590-da79c738cf52"),
+                            Id = new Guid("caa74b36-a1bc-4562-bb77-afc69db67e37"),
                             Description = "1 ба 1",
                             Image = "images/osh.png",
                             IsActive = true,
@@ -52,7 +52,7 @@ namespace KitchenClube.Migrations.MySql
                         },
                         new
                         {
-                            Id = new Guid("a7ae556f-178c-4e07-a0b0-bd4f431c6dd9"),
+                            Id = new Guid("16510143-d018-4895-834a-76bfe1319bfe"),
                             Description = "Бо гӯшти гӯспанд",
                             Image = "images/kazan.png",
                             IsActive = true,
@@ -60,7 +60,7 @@ namespace KitchenClube.Migrations.MySql
                         },
                         new
                         {
-                            Id = new Guid("3f6a9572-91b4-4f92-81cd-a2037de19de4"),
+                            Id = new Guid("c035ea70-ada5-41d3-95c7-5c94fab0bb46"),
                             Description = "Бо гӯшти гов",
                             Image = "images/jazza.png",
                             IsActive = true,
@@ -90,9 +90,9 @@ namespace KitchenClube.Migrations.MySql
                     b.HasData(
                         new
                         {
-                            Id = new Guid("fbb70259-8cb1-4b3d-9da6-4a0b0586d45b"),
-                            EndDate = new DateTime(2022, 7, 29, 11, 23, 56, 118, DateTimeKind.Local).AddTicks(623),
-                            StartDate = new DateTime(2022, 7, 29, 11, 23, 56, 118, DateTimeKind.Local).AddTicks(606),
+                            Id = new Guid("8c96b022-eb9a-451c-bdef-aa76d424a2fb"),
+                            EndDate = new DateTime(2022, 8, 25, 9, 47, 8, 363, DateTimeKind.Local).AddTicks(7854),
+                            StartDate = new DateTime(2022, 8, 25, 9, 47, 8, 363, DateTimeKind.Local).AddTicks(7844),
                             Status = 1
                         });
                 });
@@ -124,6 +124,23 @@ namespace KitchenClube.Migrations.MySql
                     b.ToTable("MenuItems", (string)null);
                 });
 
+            modelBuilder.Entity("KitchenClube.Models.Role", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Roles", (string)null);
+                });
+
             modelBuilder.Entity("KitchenClube.Models.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -145,37 +162,45 @@ namespace KitchenClube.Migrations.MySql
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("longtext");
 
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("char(36)");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
 
                     b.ToTable("Users", (string)null);
 
                     b.HasData(
                         new
                         {
-                            Id = new Guid("01869113-04bb-4a83-ab3c-e5d9dba45d3c"),
+                            Id = new Guid("d1c368e0-1123-4055-9c32-27134127bc5e"),
                             Email = "azizjon@gmail.com",
                             FullName = "Azizjon",
                             IsActive = true,
                             PasswordHash = "",
-                            PhoneNumber = "+992 92 929 2992"
+                            PhoneNumber = "+992 92 929 2992",
+                            RoleId = new Guid("00000000-0000-0000-0000-000000000000")
                         },
                         new
                         {
-                            Id = new Guid("5b5de6cc-a6fb-4433-ac37-8a815a81a595"),
+                            Id = new Guid("5c4013ce-acf3-4935-a8d1-b0e71c866564"),
                             Email = "amirjon@gmail.com",
                             FullName = "Amirjon",
                             IsActive = true,
                             PasswordHash = "",
-                            PhoneNumber = "+992 92 777 00 77"
+                            PhoneNumber = "+992 92 777 00 77",
+                            RoleId = new Guid("00000000-0000-0000-0000-000000000000")
                         },
                         new
                         {
-                            Id = new Guid("2120d68e-8b8e-4fad-9348-ca0afef4c5af"),
+                            Id = new Guid("dfb1c44c-3cc8-474d-b79d-3bd43005081a"),
                             Email = "karimjon@gamil.com",
                             FullName = "Karimjon",
                             IsActive = true,
                             PasswordHash = "",
-                            PhoneNumber = "+992 92 888 77 66"
+                            PhoneNumber = "+992 92 888 77 66",
+                            RoleId = new Guid("00000000-0000-0000-0000-000000000000")
                         });
                 });
 
@@ -222,6 +247,17 @@ namespace KitchenClube.Migrations.MySql
                     b.Navigation("Menu");
                 });
 
+            modelBuilder.Entity("KitchenClube.Models.User", b =>
+                {
+                    b.HasOne("KitchenClube.Models.Role", "Role")
+                        .WithMany("Users")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Role");
+                });
+
             modelBuilder.Entity("KitchenClube.Models.UserMenuItemSelection", b =>
                 {
                     b.HasOne("KitchenClube.Models.MenuItem", "Menuitem")
@@ -254,6 +290,11 @@ namespace KitchenClube.Migrations.MySql
             modelBuilder.Entity("KitchenClube.Models.MenuItem", b =>
                 {
                     b.Navigation("UserMenuItemSelections");
+                });
+
+            modelBuilder.Entity("KitchenClube.Models.Role", b =>
+                {
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("KitchenClube.Models.User", b =>

@@ -23,11 +23,6 @@ public class MenuController : ControllerBase
         return Ok(await _menuService.GetAsync(id));
     }
 
-    private static MenuResponse ToDto(Menu menu)
-    {
-        return new MenuResponse(menu.Id, menu.StartDate, menu.EndDate, menu.Status);
-    }
-
     [HttpPut("{id}")]
     public async Task<IActionResult> PutMenu(Guid id, UpdateMenu updateMenu)
     {
@@ -35,29 +30,29 @@ public class MenuController : ControllerBase
 
         return NoContent();
     }
-
-    [HttpPut("{id}/close")]
+    
+    [HttpPut("{id}/close"), Authorize(Policy = "Admin")]
     public async Task<IActionResult> PutMenuStatusClose(Guid id)
     {
         await _menuService.UpdateStatusCloseAsync(id);
         return NoContent();
     }
-
-    [HttpPut("{id}/open")]
+    
+    [HttpPut("{id}/open"), Authorize(Policy = "Admin")]
     public async Task<IActionResult> PutMenuStatusOpen(Guid id)
     {
         await _menuService.UpdateStatusOpenAsync(id);
         return NoContent();
     }
-    
-    [HttpPost]
+
+    [HttpPost, Authorize(Policy = "Admin")]
     public async Task<ActionResult<MenuResponse>> PostMenu(CreateMenu createMenu)
     {
         var menu = await _menuService.CreateAsync(createMenu);
         return CreatedAtAction("GetMenu", new { id = menu.Id }, menu);
     }
 
-    [HttpDelete("{id}"), Authorize(Roles = "Admin")]
+    [HttpDelete("{id}"), Authorize(Policy = "Admin")]
     public async Task<IActionResult> DeleteMenu(Guid id)
     {
         await _menuService.DeleteAsync(id);

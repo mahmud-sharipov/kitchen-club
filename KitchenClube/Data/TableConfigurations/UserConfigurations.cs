@@ -17,8 +17,8 @@ public class UserConfigurations : IEntityTypeConfiguration<User>
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
         
-        builder.HasData(new User { Id = Guid.NewGuid() ,FullName = "Azizjon", Email = "azizjon@gmail.com", PhoneNumber = "+992 92 929 2992", IsActive = true },
-                         new User { Id = Guid.NewGuid(), FullName = "Amirjon", Email = "amirjon@gmail.com", PhoneNumber = "+992 92 777 00 77", IsActive = true },
-                         new User { Id = Guid.NewGuid(), FullName = "Karimjon", Email = "karimjon@gamil.com", PhoneNumber = "+992 92 888 77 66", IsActive = true });
+        builder.HasData(new User { Id = Guid.NewGuid() ,FullName = "Azizjon", Email = "azizjon@gmail.com", PhoneNumber = "+992 92 929 2992", IsActive = true, PasswordHash = "UDٳ�#��)����d#� ��VB�~j_̓�ݿ��������!w�K��S�D��H���jI�n�	�&�" },
+                         new User { Id = Guid.NewGuid(), FullName = "Amirjon", Email = "amirjon@gmail.com", PhoneNumber = "+992 92 777 00 77", IsActive = true, PasswordHash = "UDٳ�#��)����d#� ��VB�~j_̓�ݿ��������!w�K��S�D��H���jI�n�	�&�" },
+                         new User { Id = Guid.NewGuid(), FullName = "Karimjon", Email = "karimjon@gamil.com", PhoneNumber = "+992 92 888 77 66", IsActive = true, PasswordHash = "UDٳ�#��)����d#� ��VB�~j_̓�ݿ��������!w�K��S�D��H���jI�n�	�&�" });
     }
 }

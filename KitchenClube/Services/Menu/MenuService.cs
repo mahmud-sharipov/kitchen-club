@@ -1,27 +1,21 @@
 ﻿namespace KitchenClube.Services;
 public class MenuService : ServiceBace<Menu>, IMenuService
 {
-    public MenuService(KitchenClubContext context) : base(context,context.Menu){}
+    public MenuService(KitchenClubContext context, IMapper mapper) : base(context,context.Menu, mapper){}
 
     public async Task<IEnumerable<MenuResponse>> GetAllAsync()
     {
-        return await _context.Menu.Select(u => ToDto(u)).ToListAsync();
+        return await _context.Menu.Select(u => _mapper.Map<Menu, MenuResponse>(u)).ToListAsync();
     }
 
     public async Task<MenuResponse> GetAsync(Guid id)
     {
-        return ToDto(await FindOrThrowExceptionAsync(id));
+        return _mapper.Map<Menu, MenuResponse>(await FindOrThrowExceptionAsync(id));
     }
 
     public async Task UpdateAsync(Guid id, UpdateMenu updateMenu)
     {
         var menu = await FindOrThrowExceptionAsync(id);
-
-        if (updateMenu.StartDate > updateMenu.EndDate)
-            throw new BadRequestException("End date must be greater than Start date.");
-
-        if (updateMenu.StartDate == updateMenu.EndDate)
-            throw new BadRequestException("Start date and End date can not be equal.");
 
         if (menu.Status is MenuStatus.Closed)
             throw new BadRequestException("Сan not be changed because the menu is closed.");
@@ -29,9 +23,7 @@ public class MenuService : ServiceBace<Menu>, IMenuService
         if (_context.MenuItems.Any(m => m.MenuId == id))
             throw new BadRequestException("Can not change dates of menu because it is used in menuitems");
 
-        menu.StartDate = updateMenu.StartDate;
-        menu.EndDate = updateMenu.EndDate;
-
+        menu = _mapper.Map(updateMenu, menu);
         _context.Update(menu);
         await _context.SaveChangesAsync();
     }
@@ -56,22 +48,13 @@ public class MenuService : ServiceBace<Menu>, IMenuService
 
     public async Task<MenuResponse> CreateAsync(CreateMenu createMenu)
     {
-        if (createMenu.StartDate == createMenu.EndDate)
-            throw new BadRequestException("Start date and End date can not be equal.");
+        var menu = _mapper.Map<CreateMenu, Menu>(createMenu);
+        menu.Status = MenuStatus.Draft;
 
-        if (createMenu.EndDate < createMenu.StartDate)
-            throw new BadRequestException("End date must be greater than Start date.");
-
-        var menu = new Menu
-        {
-            StartDate = createMenu.StartDate,
-            EndDate = createMenu.EndDate,
-            Status = MenuStatus.Draft
-        };
         _context.Menu.Add(menu);
 
         await _context.SaveChangesAsync();
-        return ToDto(menu);
+        return _mapper.Map<Menu, MenuResponse>(menu);
     }
 
     public async Task DeleteAsync(Guid id)
@@ -86,10 +69,5 @@ public class MenuService : ServiceBace<Menu>, IMenuService
 
         _context.Menu.Remove(menu);
         await _context.SaveChangesAsync();
-    }
-
-    private static MenuResponse ToDto(Menu menu)
-    {
-        return new MenuResponse(menu.Id, menu.StartDate, menu.EndDate, menu.Status);
     }
 }

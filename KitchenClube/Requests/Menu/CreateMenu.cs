@@ -1,8 +1,3 @@
-﻿namespace KitchenClube.Requests.Menu
-{
-    public class CreateMenu
-    {
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
-    }
-}
+﻿namespace KitchenClube.Requests.Menu;
+
+public record class CreateMenu(DateTime StartDate, DateTime EndDate);

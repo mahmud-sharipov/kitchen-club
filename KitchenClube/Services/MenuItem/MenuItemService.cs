@@ -2,28 +2,28 @@
 
 public class MenuItemService : ServiceBace<MenuItem>, IMenuItemService
 {
-    public MenuItemService(KitchenClubContext context) : base(context, context.MenuItems) { }
+    public MenuItemService(KitchenClubContext context, IMapper mapper) : base(context, context.MenuItems, mapper) { }
 
     public async Task<IEnumerable<MenuItemResponse>> GetAllAsync()
     {
-        return await _context.MenuItems.Select(m => Todto(m)).ToListAsync();
+        return await _context.MenuItems.Select(m => _mapper.Map<MenuItem, MenuItemResponse>(m)).ToListAsync();
     }
 
     public async Task<MenuItemResponse> GetAsync(Guid id)
     {
-        return Todto(await FindOrThrowExceptionAsync(id));
+        return _mapper.Map<MenuItem, MenuItemResponse>(await FindOrThrowExceptionAsync(id));
     }
 
     public async Task<IEnumerable<MenuItemResponse>> MenuItemsByMenuId(Guid menuId)
     {
         return await _context.MenuItems.Where(mi => mi.MenuId == menuId)
-            .Select(m => new MenuItemResponse(m.Id, m.Day, m.FoodId, m.MenuId, m.IsActive)).ToListAsync();
+            .Select(m => _mapper.Map<MenuItem, MenuItemResponse>(m)).ToListAsync();
     }
 
     public async Task<IEnumerable<MenuItemResponse>> MenuItemsByFoodId(Guid foodId)
     {
-        return await _context.MenuItems.Where(mi => mi.FoodId == foodId)
-            .Select(m => new MenuItemResponse(m.Id, m.Day, m.FoodId, m.MenuId, m.IsActive)).ToListAsync();
+        return await _context.MenuItems.Where(mi => mi.FoodId == foodId && mi.Menu.Status == MenuStatus.Active)
+            .Select(m => _mapper.Map<MenuItem, MenuItemResponse>(m)).ToListAsync();
     }
 
     public async Task UpdateAsync(Guid id, UpdateMenuItem updateMenuItem)
@@ -39,10 +39,11 @@ public class MenuItemService : ServiceBace<MenuItem>, IMenuItemService
         if (menuItem.Day < updateMenuItem.Day)
             throw new BadRequestException("Can not change the date of the past menu.");
 
-        menuItem.Food = food;
-        menuItem.Menu = menu;
         menuItem.Day = updateMenuItem.Day;
         menuItem.IsActive = updateMenuItem.IsActive;
+        menuItem.Food = food;
+        menuItem.Menu = menu;
+
         _context.MenuItems.Update(menuItem);
         await _context.SaveChangesAsync();
     }
@@ -68,7 +69,7 @@ public class MenuItemService : ServiceBace<MenuItem>, IMenuItemService
         };
         _context.MenuItems.Add(menuItem);
         await _context.SaveChangesAsync();
-        return Todto(menuItem);
+        return _mapper.Map<MenuItem, MenuItemResponse>(menuItem);
     }
 
     public async Task DeleteAsync(Guid id)
@@ -81,10 +82,4 @@ public class MenuItemService : ServiceBace<MenuItem>, IMenuItemService
         _context.MenuItems.Remove(menuItem);
         await _context.SaveChangesAsync();
     }
-
-    private static MenuItemResponse Todto(MenuItem menuItem)
-    {
-        return new MenuItemResponse(menuItem.Id, menuItem.Day, menuItem.FoodId, menuItem.MenuId, menuItem.IsActive);
-    }
-
 }

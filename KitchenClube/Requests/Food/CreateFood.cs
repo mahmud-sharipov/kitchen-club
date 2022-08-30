@@ -1,15 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace KitchenClube.Requests.Food;
 
-namespace KitchenClube.Requests.Food
-{
-    public class CreateFood
-    {
-        public string Name { get; set; }
-        public string Image { get; set; }
-        public string Description { get; set; }
-    }
-}
+public record class CreateFood(string Name, string Image, string Description);

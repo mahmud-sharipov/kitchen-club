@@ -17,5 +17,8 @@ public class User : BaseEntity
     public string PasswordHash { get; set; }
     public bool IsActive { get; set; }
 
+    public virtual Guid RoleId { get; set; }
+    public virtual Role Role { get; set; }
+
     public virtual ICollection<UserMenuItemSelection> MenuSelections { get; private set; }
 }

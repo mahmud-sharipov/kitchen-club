@@ -4,11 +4,15 @@ public class ServiceBace<TEntity> where TEntity : BaseEntity
 {
     protected readonly KitchenClubContext _context;
     protected readonly DbSet<TEntity> _dbSet;
+    protected readonly IHttpContextAccessor _contextAccessor;
+    protected readonly IMapper _mapper;
 
-    public ServiceBace(KitchenClubContext context, DbSet<TEntity> dbSet)
+    public ServiceBace(KitchenClubContext context, DbSet<TEntity> dbSet, IMapper mapper)
     {
         _context = context;
         _dbSet = dbSet;
+        _contextAccessor = new HttpContextAccessor();
+        _mapper = mapper;
     }
 
     protected async Task<TEntity> FindOrThrowExceptionAsync(Guid id) =>

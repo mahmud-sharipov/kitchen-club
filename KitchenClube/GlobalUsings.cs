@@ -23,7 +23,7 @@ global using Microsoft.OpenApi.Models;
 global using Microsoft.AspNetCore.Authorization;
 
 global using System.Text.RegularExpressions;
+global using KitchenClube.Requests.Roles;
+global using AutoMapper;
 
-
-
-
+global using FluentValidation;

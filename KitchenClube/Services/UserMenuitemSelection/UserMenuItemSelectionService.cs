@@ -2,36 +2,37 @@
 
 public class UserMenuItemSelectionService : ServiceBace<UserMenuItemSelection>, IUserMenuItemSelectionService
 {
-    public UserMenuItemSelectionService(KitchenClubContext context) : base(context, context.UserMenuItemSelections) { }
+    public UserMenuItemSelectionService(KitchenClubContext context, IMapper mapper)
+        : base(context, context.UserMenuItemSelections, mapper) {  }
 
     public async Task<IEnumerable<UserMenuItemSelectionResponse>> GetAllAsync()
     {
         return await _context.UserMenuItemSelections
-            .Select(u => ToDto(u)).ToListAsync();
+            .Select(u => _mapper.Map<UserMenuItemSelection, UserMenuItemSelectionResponse>(u)).ToListAsync();
     }
 
     public async Task<UserMenuItemSelectionResponse> GetAsync(Guid id)
     {
-        return ToDto(await FindOrThrowExceptionAsync(id));
+        return _mapper.Map<UserMenuItemSelection, UserMenuItemSelectionResponse>(await FindOrThrowExceptionAsync(id));
     }
 
     public async Task<IEnumerable<UserMenuItemSelectionResponse>> UserMenuItemSelectionsByUserId(Guid userId)
     {
         return await _context.UserMenuItemSelections.Where(u => u.UserId == userId)
-            .Select(u => ToDto(u)).ToListAsync();
+            .Select(u => _mapper.Map<UserMenuItemSelection,UserMenuItemSelectionResponse>(u)).ToListAsync();
     }
 
     public async Task<IEnumerable<UserMenuItemSelectionResponse>> UserMenuItemSelectionsByMenuitemId(Guid menuitemId)
     {
         return await _context.UserMenuItemSelections.Where(u => u.MenuitemId == menuitemId)
-            .Select(u => ToDto(u)).ToListAsync();
+            .Select(u => _mapper.Map<UserMenuItemSelection, UserMenuItemSelectionResponse>(u)).ToListAsync();
     }
 
     public async Task UpdateAsync(Guid id, UpdateUserMenuItemSelection updateUserMenuItemSelection)
     {
         var userMenuItemSelection = await FindOrThrowExceptionAsync(id);
 
-        var menuItem = _context.MenuItems.Where(m => m.Id == userMenuItemSelection.MenuitemId).FirstOrDefault();
+        var menuItem = _context.MenuItems.FirstOrDefault(m => m.Id == userMenuItemSelection.MenuitemId);
         if (menuItem.Day < DateTime.Now)
             throw new BadRequestException("Can not change past users' selections");
 
@@ -54,7 +55,8 @@ public class UserMenuItemSelectionService : ServiceBace<UserMenuItemSelection>, 
 
     public async Task<UserMenuItemSelectionResponse> CreateAsync(CreateUserMenuItemSelection createUserMenuItemSelection)
     {
-        var user = await _context.Users.FindOrThrowExceptionAsync(createUserMenuItemSelection.UserId);
+        var idUser = _contextAccessor.HttpContext.User.FindFirst(ClaimTypes.Sid).Value;
+        var user = await _context.Users.FindOrThrowExceptionAsync(Guid.Parse(idUser));
         var menuItem = await _context.MenuItems.FindOrThrowExceptionAsync(createUserMenuItemSelection.MenuitemId);
 
         if (menuItem.Day < DateTime.Now)
@@ -69,7 +71,7 @@ public class UserMenuItemSelectionService : ServiceBace<UserMenuItemSelection>, 
 
         _context.UserMenuItemSelections.Add(userMenuItemSelection);
         await _context.SaveChangesAsync();
-        return ToDto(userMenuItemSelection);
+        return _mapper.Map<UserMenuItemSelection, UserMenuItemSelectionResponse>(userMenuItemSelection);
     }
 
     public async Task DeleteAsync(Guid id)
@@ -82,10 +84,4 @@ public class UserMenuItemSelectionService : ServiceBace<UserMenuItemSelection>, 
         _context.UserMenuItemSelections.Remove(userMenuItemSelection);
         await _context.SaveChangesAsync();
     }
-
-    private static UserMenuItemSelectionResponse ToDto(UserMenuItemSelection u)
-    {
-        return new UserMenuItemSelectionResponse(u.Id, u.MenuitemId, u.UserId, u.Vote);
-    }
-
 }
