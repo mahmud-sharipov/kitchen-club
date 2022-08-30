@@ -2,10 +2,10 @@
 
 public class RoleService : ServiceBace<Role>, IRoleService
 {
-    public RoleService(KitchenClubContext context, IMapper mapper) : base(context,context.Roles, mapper) {}
+    public RoleService(KitchenClubContext context, IMapper mapper) : base(context, context.Roles, mapper) { }
     public async Task<IEnumerable<RoleResponse>> GetAllAsync()
     {
-        return await _context.Roles.Select(u=>_mapper.Map<Role, RoleResponse>(u)).ToListAsync();
+        return await _context.Roles.Select(u => _mapper.Map<Role, RoleResponse>(u)).ToListAsync();
     }
 
     public async Task<RoleResponse> GetAsync(Guid id)
@@ -16,7 +16,7 @@ public class RoleService : ServiceBace<Role>, IRoleService
     public async Task UpdateAsync(Guid id, UpdateRole updateRole)
     {
         var role = await FindOrThrowExceptionAsync(id);
-        role = _mapper.Map(updateRole,role);
+        role = _mapper.Map(updateRole, role);
 
         _context.Roles.Update(role);
         await _context.SaveChangesAsync();

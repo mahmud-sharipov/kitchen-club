@@ -4,6 +4,6 @@ public class LoginValidator : AbstractValidator<LoginUser>
 {
     public LoginValidator()
     {
-        RuleFor(l => l.Email).EmailAddress().WithMessage("Can not login because your email is wrong");
+        RuleFor(l => l.Email).EmailAddress();
     }
 }
