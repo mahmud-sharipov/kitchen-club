@@ -3,6 +3,7 @@ using System;
 using KitchenClube.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KitchenClube.Migrations.MySql
 {
     [DbContext(typeof(KitchenClubMySqlContext))]
-    partial class KitchenClubMySqlContextModelSnapshot : ModelSnapshot
+    [Migration("20220901101621_RoleRemoved")]
+    partial class RoleRemoved
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -2,7 +2,7 @@
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize(Policy  = "Admin")]
+[Authorize(Roles = "Admin")]
 public class RolesController : ControllerBase
 {
     private readonly IRoleService _roleService;

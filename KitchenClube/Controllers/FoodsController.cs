@@ -20,21 +20,21 @@ public class FoodsController : ControllerBase
     public async Task<ActionResult<FoodResponse>> GetFood(Guid id) =>
         Ok(await _foodService.GetAsync(id));
 
-    [HttpPut("{id}"), Authorize(Policy = "Admin")]
+    [HttpPut("{id}"), Authorize(Roles = "Admin")]
     public async Task<IActionResult> PutFood(Guid id, UpdateFood updateFood)
     {
         await _foodService.UpdateAsync(id, updateFood);
         return NoContent();
     }
 
-    [HttpPost, Authorize(Policy = "Admin")]
+    [HttpPost, Authorize(Roles = "Admin")]
     public async Task<ActionResult<FoodResponse>> PostFood(CreateFood createFood)
     {
         var food = await _foodService.CreateAsync(createFood);
         return CreatedAtAction("GetFood", new { id = food.Id }, food);
     }
 
-    [HttpDelete("{id}"), Authorize(Policy = "Admin")]
+    [HttpDelete("{id}"), Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteFood(Guid id)
     {
         await _foodService.DeleteAsync(id);

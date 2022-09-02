@@ -1,44 +1,54 @@
 ﻿namespace KitchenClube.Services;
 
-public class RoleService : ServiceBace<Role>, IRoleService
+public class RoleService : IRoleService
 {
-    public RoleService(KitchenClubContext context, IMapper mapper) : base(context, context.Roles, mapper) { }
-    public async Task<IEnumerable<RoleResponse>> GetAllAsync()
+    private readonly UserManager<User> _usermanager;
+    private readonly IMapper _mapper;
+    private readonly RoleManager<Role> _roleManager;
+
+    public RoleService(UserManager<User> usermanager, IMapper mapper, RoleManager<Role> roleManager)
     {
-        return await _context.Roles.Select(u => _mapper.Map<Role, RoleResponse>(u)).ToListAsync();
+        _usermanager = usermanager;
+        _mapper = mapper;
+        _roleManager = roleManager;
     }
+
+    public async Task<ActionResult<IEnumerable<Role>>> GetAllAsync() => await _roleManager.Roles.ToListAsync();
 
     public async Task<RoleResponse> GetAsync(Guid id)
     {
-        return _mapper.Map<Role, RoleResponse>(await FindOrThrowExceptionAsync(id));
+        return await _roleManager.Roles.Where(r => r.Id == id)
+            .Select(r => _mapper.Map<Role,RoleResponse>(r)).FirstOrDefaultAsync();
     }
 
     public async Task UpdateAsync(Guid id, UpdateRole updateRole)
     {
-        var role = await FindOrThrowExceptionAsync(id);
-        role = _mapper.Map(updateRole, role);
+        var role = await _roleManager.Roles.Where(r => r.Id == id).FirstOrDefaultAsync();
+        _mapper.Map(updateRole, role);
 
-        _context.Roles.Update(role);
-        await _context.SaveChangesAsync();
+        await _roleManager.UpdateAsync(role);
     }
 
     public async Task<RoleResponse> CreateAsync(CreateRole createRole)
     {
-        var role = _mapper.Map<CreateRole, Role>(createRole);
+        var role = new Role(createRole.Name);
         role.IsActive = true;
-        _context.Roles.Add(role);
-        await _context.SaveChangesAsync();
-        return _mapper.Map<Role, RoleResponse>(role);
+        await _roleManager.CreateAsync(role);
+        return new RoleResponse(role.Id,role.Name,role.IsActive);
     }
 
     public async Task DeleteAsync(Guid id)
     {
-        var role = await FindOrThrowExceptionAsync(id);
+        var role = await _roleManager.Roles.Where(r => r.Id==id).FirstOrDefaultAsync();
 
-        if (_context.Users.Any(u => u.RoleId == role.Id))
+        if (role is null)
+            throw new NotFoundException("Role", id);
+
+        var urs = await _usermanager.GetUsersInRoleAsync(role.Name);
+
+        if (urs.Count > 0)
             throw new BadRequestException("Cannot delete role because there are Users with it");
 
-        _context.Roles.Remove(role);
-        await _context.SaveChangesAsync();
+        await _roleManager.DeleteAsync(role);
     }
 }

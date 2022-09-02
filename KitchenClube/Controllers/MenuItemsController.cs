@@ -23,7 +23,6 @@ public class MenuItemsController : ControllerBase
     {
         return Ok(await _menuItemService.GetAsync(id));
     }
-
    
     [HttpGet("menu/{menuId}")]
     public async Task<ActionResult<IEnumerable<MenuItemResponse>>> GetMenuItemsByMenuId(Guid menuId)
@@ -37,21 +36,21 @@ public class MenuItemsController : ControllerBase
         return Ok(await _menuItemService.MenuItemsByFoodId(foodId));
     }
 
-    [HttpPut("{id}"), Authorize(Policy = "Admin")]
+    [HttpPut("{id}"), Authorize(Roles = "Admin")]
     public async Task<IActionResult> PutMenuItem(Guid id, UpdateMenuItem updateMenuItem)
     {
         await _menuItemService.UpdateAsync(id, updateMenuItem);
         return NoContent();
     }
 
-    [HttpPost, Authorize(Policy = "Admin")]
+    [HttpPost, Authorize(Roles = "Admin")]
     public async Task<ActionResult<MenuItem>> PostMenuItem(CreateMenuItem createMenuItem)
     {
         var menuItem = await _menuItemService.CreateAsync(createMenuItem);
         return CreatedAtAction("GetMenuItem", new { id = menuItem.Id }, menuItem);
     }
 
-    [HttpDelete("{id}"), Authorize(Policy = "Admin")]
+    [HttpDelete("{id}"), Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteMenuItem(Guid id)
     {
         await _menuItemService.DeleteAsync(id);

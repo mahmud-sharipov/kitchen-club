@@ -2,7 +2,7 @@
 
 public interface IRoleService
 {
-    Task<IEnumerable<RoleResponse>> GetAllAsync();
+    Task<ActionResult<IEnumerable<Role>>> GetAllAsync();
     Task<RoleResponse> GetAsync(Guid id);
     Task<RoleResponse> CreateAsync(CreateRole createRole);
     Task UpdateAsync(Guid id, UpdateRole updateRole);

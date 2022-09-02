@@ -2,8 +2,12 @@
 
 public class UserMenuItemSelectionService : ServiceBace<UserMenuItemSelection>, IUserMenuItemSelectionService
 {
-    public UserMenuItemSelectionService(KitchenClubContext context, IMapper mapper)
-        : base(context, context.UserMenuItemSelections, mapper) {  }
+    private readonly UserManager<User> _userManager;
+    public UserMenuItemSelectionService(KitchenClubContext context, IMapper mapper, UserManager<User> userManager)
+        : base(context, context.UserMenuItemSelections, mapper) 
+    {
+        _userManager = userManager;
+    }
 
     public async Task<IEnumerable<UserMenuItemSelectionResponse>> GetAllAsync()
     {
@@ -36,7 +40,10 @@ public class UserMenuItemSelectionService : ServiceBace<UserMenuItemSelection>, 
         if (menuItem.Day < DateTime.Now)
             throw new BadRequestException("Can not change past users' selections");
 
-        var user = await _context.Users.FindOrThrowExceptionAsync(updateUserMenuItemSelection.UserId);
+        var user = await _userManager.Users.Where(u => u.Id == updateUserMenuItemSelection.UserId).FirstOrDefaultAsync();
+
+        if (user is null)
+            throw new NotFoundException("User", updateUserMenuItemSelection.UserId);
 
         if (user.IsActive == false)
             throw new BadRequestException("User can not select menu because he/she is not active");
@@ -56,7 +63,11 @@ public class UserMenuItemSelectionService : ServiceBace<UserMenuItemSelection>, 
     public async Task<UserMenuItemSelectionResponse> CreateAsync(CreateUserMenuItemSelection createUserMenuItemSelection)
     {
         var idUser = _contextAccessor.HttpContext.User.FindFirst(ClaimTypes.Sid).Value;
-        var user = await _context.Users.FindOrThrowExceptionAsync(Guid.Parse(idUser));
+        var user = await _userManager.Users.Where(u => u.Id == Guid.Parse(idUser)).FirstOrDefaultAsync();
+
+        if (user is null)
+            throw new NotFoundException("User", idUser);
+        
         var menuItem = await _context.MenuItems.FindOrThrowExceptionAsync(createUserMenuItemSelection.MenuitemId);
 
         if (menuItem.Day < DateTime.Now)

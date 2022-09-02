@@ -27,3 +27,6 @@ global using KitchenClube.Requests.Roles;
 global using AutoMapper;
 
 global using FluentValidation;
+
+global using Microsoft.AspNetCore.Identity;
+global using Microsoft.AspNetCore.Identity.EntityFrameworkCore;

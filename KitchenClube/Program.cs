@@ -21,14 +21,20 @@ var builder = WebApplication.CreateBuilder(args);
         options.UseLazyLoadingProxies();
     });
 
+    builder.Services.AddIdentity<User, Role>(options => {
+        options.SignIn.RequireConfirmedAccount = true;
+        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequireDigit = false;
+        options.Password.RequireUppercase = false;
+    }).AddEntityFrameworkStores<KitchenClubContext>();
+
     builder.Services.AddScoped<IFoodService, FoodService>();
     builder.Services.AddScoped<IMenuService, MenuService>();
     builder.Services.AddScoped<IMenuItemService, MenuItemService>();
     builder.Services.AddScoped<IUserMenuItemSelectionService, UserMenuItemSelectionService>();
     builder.Services.AddScoped<IUserService, UserService>();
-
-    builder.Services.AddScoped<IRoleService, RoleService>();
     builder.Services.AddScoped<IAuthService, AuthService>();
+    builder.Services.AddScoped<IRoleService, RoleService>();
 
     builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
@@ -41,7 +47,6 @@ var builder = WebApplication.CreateBuilder(args);
         x.ImplicitlyValidateRootCollectionElements = true;
         x.RegisterValidatorsFromAssembly(Assembly.GetExecutingAssembly());
     });
-
 
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen(options =>
@@ -74,27 +79,8 @@ var builder = WebApplication.CreateBuilder(args);
                 ValidateIssuerSigningKey = true
             };
         });
-    builder.Services.AddAuthorization(opts =>
-    {
-        opts.AddPolicy("Admin", policy =>
-        {
-            policy.RequireClaim(ClaimTypes.Role, "Admin");
-        });
-
-        opts.AddPolicy("User", policy =>
-        {
-            policy.RequireClaim(ClaimTypes.Role, "User");
-        });
-
-        //TODO:Remove
-        opts.AddPolicy("All", policy =>
-        {
-            policy.RequireClaim(ClaimTypes.Role, "Admin", "User");
-        });
-    });
+    builder.Services.AddAuthorization();
 }
-
-
 
 var app = builder.Build();
 

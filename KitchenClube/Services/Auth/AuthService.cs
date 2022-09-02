@@ -3,56 +3,63 @@
 public class AuthService : IAuthService
 {
     private readonly IConfiguration _configuration;
-    private readonly KitchenClubContext _context;
+    private readonly UserManager<User> _userManager;
 
-    public AuthService(IConfiguration configuration, KitchenClubContext context)
+    public AuthService(IConfiguration configuration, UserManager<User> userManager)
     {
         _configuration = configuration;
-        _context = context;
+        _userManager = userManager;
     }
 
     public async Task<LoginResponse> Login(LoginUser loginUser)
     {
-        var user = await _context.Users.Where(u => u.Email == loginUser.Email).FirstOrDefaultAsync();
-        if (user == null)
-            throw new BadRequestException("Can not login because your email does not exsits in system");
+        User identityUser;
 
-        if (user.IsActive == false)
-            throw new BadRequestException("Can not login because user is not active");
-        
-        if (!VerifyPassword(loginUser.Password, user.PasswordHash))
-            throw new BadRequestException("Can not login because your password is incorrect");
+        if (loginUser == null || (identityUser = await ValidateUser(loginUser)) == null)
+        {
+            throw new BadRequestException("Login failed! Please check details and try again.");
+        }
 
-        var token = CreateToken(user);
+        var token = await GenerateToken(identityUser);
         return new LoginResponse(token);
     }
 
-    private bool VerifyPassword(string password, string passwordHash)
+    private async Task<User> ValidateUser(LoginUser loginUser)
     {
-        var salt = _configuration.GetSection("AppSettings:Salt").Value;
-        using (var hmac = new HMACSHA512(Encoding.UTF8.GetBytes(salt)))
+        var identityUser = await _userManager.FindByNameAsync(loginUser.Email);
+        if (identityUser != null)
         {
-            var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-            return Encoding.UTF8.GetString(computedHash).Equals(passwordHash);
+            if (identityUser.IsActive == false)
+                throw new BadRequestException("Can not login because user is not active");
+
+            var result = _userManager.PasswordHasher.VerifyHashedPassword(identityUser, identityUser.PasswordHash, loginUser.Password);
+            return result == PasswordVerificationResult.Failed ? throw new BadRequestException("Can not login because your password is incorrect") : identityUser;
         }
+        return null;
     }
 
-    private string CreateToken(User user)
+    private async Task<string> GenerateToken(User identityUser)
     {
         var key = Encoding.ASCII.GetBytes(_configuration["AppSettings:Token"]);
+
+        var claims = new List<Claim>()
+        {
+            new Claim(ClaimTypes.Sid, identityUser.Id.ToString()),
+        };
+        foreach(var role in await _userManager.GetRolesAsync(identityUser))
+        {
+            claims.Add(new Claim(ClaimTypes.Role, role));
+        };
+
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity(new[]
-            {
-                new Claim(ClaimTypes.Sid, user.Id.ToString()),
-                new Claim(ClaimTypes.Role, user.Role.Name)
-            }),
+            Subject = new ClaimsIdentity(claims),
             Expires = DateTime.UtcNow.AddHours(10),
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha512Signature)
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };
+
         var tokenHandler = new JwtSecurityTokenHandler();
-        var securityToken = tokenHandler.CreateToken(tokenDescriptor);
-        var token = tokenHandler.WriteToken(securityToken);
-        return token;
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        return tokenHandler.WriteToken(token);
     }
 }

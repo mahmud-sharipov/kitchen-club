@@ -1,6 +1,6 @@
 ﻿namespace KitchenClube.Validators;
 
-public class CreateRoleValidator:AbstractValidator<Role>
+public class CreateRoleValidator:AbstractValidator<CreateRole>
 {
     public CreateRoleValidator()
     {

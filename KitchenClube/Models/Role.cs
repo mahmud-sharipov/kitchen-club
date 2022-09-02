@@ -1,8 +1,6 @@
 ﻿namespace KitchenClube.Models;
-public class Role:BaseEntity
+public class Role: IdentityRole<Guid>
 {
-    public string Name { get; set; }
+    public Role(string Name) : base(Name){}
     public bool IsActive { get; set; }
-
-    public virtual ICollection<User> Users { get; private set; }
 }

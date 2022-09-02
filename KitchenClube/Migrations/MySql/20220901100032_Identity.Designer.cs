@@ -3,6 +3,7 @@ using System;
 using KitchenClube.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KitchenClube.Migrations.MySql
 {
     [DbContext(typeof(KitchenClubMySqlContext))]
-    partial class KitchenClubMySqlContextModelSnapshot : ModelSnapshot
+    [Migration("20220901100032_Identity")]
+    partial class Identity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -44,7 +46,7 @@ namespace KitchenClube.Migrations.MySql
                     b.HasData(
                         new
                         {
-                            Id = new Guid("f6be27b2-0835-48b5-8d2b-5ed09a397a5b"),
+                            Id = new Guid("bd5866dd-f2d8-45ed-84c5-15f266175d8e"),
                             Description = "1 ба 1",
                             Image = "images/osh.png",
                             IsActive = true,
@@ -52,7 +54,7 @@ namespace KitchenClube.Migrations.MySql
                         },
                         new
                         {
-                            Id = new Guid("16000d1e-16a8-478b-8f80-0444699158ea"),
+                            Id = new Guid("ed6c8fa8-4211-46c1-8b4b-831f2f50776b"),
                             Description = "Бо гӯшти гӯспанд",
                             Image = "images/kazan.png",
                             IsActive = true,
@@ -60,7 +62,7 @@ namespace KitchenClube.Migrations.MySql
                         },
                         new
                         {
-                            Id = new Guid("30074704-1655-4e4b-bcbf-90bace8ff1c1"),
+                            Id = new Guid("c2d82c5c-5410-4fd7-9569-1e5e18527180"),
                             Description = "Бо гӯшти гов",
                             Image = "images/jazza.png",
                             IsActive = true,
@@ -90,9 +92,9 @@ namespace KitchenClube.Migrations.MySql
                     b.HasData(
                         new
                         {
-                            Id = new Guid("c7cf993b-06c9-473a-92c7-a23f63b82beb"),
-                            EndDate = new DateTime(2022, 9, 1, 15, 16, 21, 512, DateTimeKind.Local).AddTicks(2105),
-                            StartDate = new DateTime(2022, 9, 1, 15, 16, 21, 512, DateTimeKind.Local).AddTicks(2096),
+                            Id = new Guid("44a383b7-77ff-4ca7-84ff-14ed9651839e"),
+                            EndDate = new DateTime(2022, 9, 1, 15, 0, 32, 378, DateTimeKind.Local).AddTicks(440),
+                            StartDate = new DateTime(2022, 9, 1, 15, 0, 32, 378, DateTimeKind.Local).AddTicks(430),
                             Status = 1
                         });
                 });
@@ -203,6 +205,9 @@ namespace KitchenClube.Migrations.MySql
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<Guid?>("RoleId")
+                        .HasColumnType("char(36)");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("longtext");
 
@@ -221,6 +226,8 @@ namespace KitchenClube.Migrations.MySql
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
+
+                    b.HasIndex("RoleId");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -367,6 +374,13 @@ namespace KitchenClube.Migrations.MySql
                     b.Navigation("Menu");
                 });
 
+            modelBuilder.Entity("KitchenClube.Models.User", b =>
+                {
+                    b.HasOne("KitchenClube.Models.Role", null)
+                        .WithMany("Users")
+                        .HasForeignKey("RoleId");
+                });
+
             modelBuilder.Entity("KitchenClube.Models.UserMenuItemSelection", b =>
                 {
                     b.HasOne("KitchenClube.Models.MenuItem", "Menuitem")
@@ -450,6 +464,11 @@ namespace KitchenClube.Migrations.MySql
             modelBuilder.Entity("KitchenClube.Models.MenuItem", b =>
                 {
                     b.Navigation("UserMenuItemSelections");
+                });
+
+            modelBuilder.Entity("KitchenClube.Models.Role", b =>
+                {
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("KitchenClube.Models.User", b =>

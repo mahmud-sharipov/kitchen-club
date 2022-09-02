@@ -1,71 +1,106 @@
 ﻿namespace KitchenClube.Services;
 
-public class UserService : ServiceBace<User>, IUserService
+public class UserService : IUserService
 {
-    private readonly IConfiguration _configuration;
+    private readonly IMapper _mapper;
+    private readonly UserManager<User> _userManager;
+    private readonly KitchenClubContext _context;
+    protected readonly IHttpContextAccessor _contextAccessor;
 
-    public UserService(KitchenClubContext context, IConfiguration configuration, IMapper mapper) : base(context, context.Users, mapper)
+    public UserService(IMapper mapper, UserManager<User> userManager, KitchenClubContext context, IHttpContextAccessor contextAccessor)
     {
-        _configuration = configuration;
+        _mapper = mapper;
+        _userManager = userManager;
+        _context = context;
+        _contextAccessor = contextAccessor;
     }
 
     public async Task<IEnumerable<UserResponse>> GetAllAsync()
     {
-        return await _context.Users.Select(u => _mapper.Map<User,UserResponse>(u)).ToListAsync();
+        var userResponse = await _userManager.Users.Select(u => new UserResponse(u.Id,
+        u.FullName, u.PhoneNumber, u.Email, //string.Join(",", _userManager.GetRolesAsync(u)),
+        "", u.IsActive)).ToListAsync();
+
+        return userResponse;
     }
 
     public async Task<UserResponse> GetAsync(Guid id)
     {
-        return _mapper.Map<User, UserResponse>(await FindOrThrowExceptionAsync(id));
-    }
+        var user = await _userManager.Users.Where(u => u.Id == id).FirstOrDefaultAsync();
 
-    public async Task<IEnumerable<UserResponse>> GetByRoleAsync(Guid id)
-    {
-        return await _context.Users.Where(u=>u.RoleId == id).Select(u=> _mapper.Map<User, UserResponse>(u)).ToListAsync();
+        if (user == null)
+            throw new NotFoundException("User", id);
+
+        var userResponse = new UserResponse(
+                user.Id,
+                user.FullName,
+                user.PhoneNumber,
+                user.Email,
+                string.Join(",", _userManager.GetRolesAsync(user).Result.ToArray()),
+                user.IsActive);
+        return userResponse;
     }
 
     public async Task UpdateAsync(Guid id, UpdateUser updateUser)
     {
-        var user = await FindOrThrowExceptionAsync(id);
-        user = _mapper.Map(updateUser, user);
-        _context.Users.Update(user);
-        await _context.SaveChangesAsync();
+        var user = await _userManager.Users.Where(u => u.Id == id).FirstOrDefaultAsync();
+
+        if (user == null)
+            throw new NotFoundException("User", id);
+
+        _mapper.Map(updateUser, user);
+
+        await _userManager.UpdateAsync(user);
+    }
+
+    public async Task UpdateAsync(Guid id, UpdateUserRole updateUserRole)
+    {
+        var user = await _userManager.Users.Where(u => u.Id == id).FirstOrDefaultAsync();
+
+        var userRoles = await _userManager.GetRolesAsync(user);
+
+        var addedRoles = updateUserRole.Roles.Except(userRoles);
+        var removedRoles = userRoles.Except(updateUserRole.Roles);
+
+        await _userManager.AddToRolesAsync(user, addedRoles);
+        await _userManager.RemoveFromRolesAsync(user, removedRoles);
     }
 
     public async Task<UserResponse> CreateAsync(CreateUser createUser)
     {
         var email = createUser.Email.ToLower();
 
-        if (_context.Users.Any(u => u.Email.ToLower() == email))
+        if (_userManager.Users.Any(u => u.Email == createUser.Email))
             throw new BadRequestException("User with this email is already regitered");
 
         var user = _mapper.Map<CreateUser, User>(createUser);
-        user.PasswordHash = CreatePasswordHash(createUser.Password);
         user.IsActive = true;
-        user.RoleId = _context.Roles.Where(r => r.Name == "User").Select(r => r.Id).FirstOrDefault();
 
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
-        return _mapper.Map<User,UserResponse>(user);
-    }
+        var result = await _userManager.CreateAsync(user, createUser.Password);
 
-    private string CreatePasswordHash(string password)
-    {
-        var salt = Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Salt").Value);
-        using (var hmac = new HMACSHA512(salt))
-        {
-            return Encoding.UTF8.GetString(hmac.ComputeHash(Encoding.UTF8.GetBytes(password)));
-        }
+        await _userManager.AddToRolesAsync(user, createUser.Roles);
+
+        return new UserResponse(user.Id, user.FullName, user.PhoneNumber, user.Email,
+            string.Join(",", _userManager.GetRolesAsync(user).Result.ToArray()), user.IsActive);
     }
 
     public async Task DeleteAsync(Guid id)
     {
-        var user = await FindOrThrowExceptionAsync(id);
+        var user = await _userManager.Users.Where(u => u.Id == id).FirstOrDefaultAsync();
+
+        if (user == null)
+            throw new NotFoundException("User",id);
 
         if (_context.UserMenuItemSelections.Any(u => u.UserId == id))
             throw new BadRequestException("User can not be deleted because he/she has made menu selections");
 
-        _context.Users.Remove(user);
-        await _context.SaveChangesAsync();
+        await _userManager.DeleteAsync(user);
+    }
+
+    public async Task ResetPasswordAsync(ResetPasswordUser reset)
+    {
+        var user = _userManager.FindByIdAsync(_contextAccessor.HttpContext.User.FindFirst(ClaimTypes.Sid).Value).Result;
+        user.PasswordHash = _userManager.PasswordHasher.HashPassword(user, reset.NewPassword);
+        await _userManager.UpdateAsync(user);
     }
 }

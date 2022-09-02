@@ -5,8 +5,8 @@ public class MapperProfile : Profile
     public MapperProfile()
     {
         CreateMap<UpdateUser, User>();
-        CreateMap<CreateUser, User>();
-        CreateMap<User,UserResponse>();
+        CreateMap<CreateUser, User>().ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email));
+        //CreateMap<User,UserResponse>();
 
         CreateMap<UpdateFood, Food>();
         CreateMap<CreateFood, Food>();

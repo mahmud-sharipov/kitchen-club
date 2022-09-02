@@ -12,7 +12,7 @@ public class UsersController : ControllerBase
         _userService = userService;
     }
 
-    [HttpGet, Authorize(Policy = "All")]
+    [HttpGet]
     public async Task<ActionResult<IEnumerable<UserResponse>>> GetUsers()
     {
         return Ok(await _userService.GetAllAsync());
@@ -24,27 +24,36 @@ public class UsersController : ControllerBase
         return Ok(await _userService.GetAsync(id));
     }
 
-    [HttpGet("roles/{id}"), Authorize(Policy = "Admin")]
-    public async Task<ActionResult<UserResponse>> GetUserByRole(Guid id)
-    {
-        return Ok(await _userService.GetByRoleAsync(id));
-    }
-
-    [HttpPut("{id}"), Authorize(Policy = "All")]
+    [HttpPut("{id}")]
     public async Task<IActionResult> PutUser(Guid id, UpdateUser updateUser)
     {
         await _userService.UpdateAsync(id, updateUser);
         return NoContent();
     }
+    
 
-    [HttpPost, Authorize(Policy = "Admin")]
+    [HttpPut("roles/{id}"), Authorize(Roles = "Admin")]
+    public async Task<IActionResult> PutUserRole(Guid id, UpdateUserRole updateUserRole)
+    {
+        await _userService.UpdateAsync(id, updateUserRole);
+        return NoContent();
+    }
+
+    [HttpPut("/passwordreset")]
+    public async Task<IActionResult> PutUserPassword(ResetPasswordUser reset)
+    {
+        await _userService.ResetPasswordAsync(reset);
+        return NoContent();
+    }
+
+    [HttpPost, Authorize(Roles = "Admin")]
     public async Task<ActionResult<UserResponse>> PostUser(CreateUser createUser)
     {
         var user = await _userService.CreateAsync(createUser);
         return CreatedAtAction("GetUser", new { id = user.Id }, user);
     }
 
-    [HttpDelete("{id}"), Authorize(Policy = "Admin")]
+    [HttpDelete("{id}"), Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteUser(Guid id)
     {
         await _userService.DeleteAsync(id);
