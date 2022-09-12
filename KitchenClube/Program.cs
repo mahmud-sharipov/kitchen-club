@@ -1,6 +1,8 @@
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Filters;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,27 +30,40 @@ var builder = WebApplication.CreateBuilder(args);
         options.Password.RequireUppercase = false;
     }).AddEntityFrameworkStores<KitchenClubContext>();
 
-    builder.Services.AddScoped<IFoodService, FoodService>();
-    builder.Services.AddScoped<IMenuService, MenuService>();
-    builder.Services.AddScoped<IMenuItemService, MenuItemService>();
-    builder.Services.AddScoped<IUserMenuItemSelectionService, UserMenuItemSelectionService>();
-    builder.Services.AddScoped<IUserService, UserService>();
-    builder.Services.AddScoped<IAuthService, AuthService>();
-    builder.Services.AddScoped<IRoleService, RoleService>();
+    builder.Services.AddScoped<KitchenClube.Services.V1.IFoodService, KitchenClube.Services.V1.FoodService>();
+    builder.Services.AddScoped<KitchenClube.Services.V1.IMenuService, KitchenClube.Services.V1.MenuService>();
+    builder.Services
+        .AddScoped<KitchenClube.Services.V1.IMenuItemService, KitchenClube.Services.V1.MenuItemService>();
+    builder.Services
+        .AddScoped<KitchenClube.Services.V1.IUserMenuItemSelectionService, KitchenClube.Services.V1.UserMenuItemSelectionService>();
+    builder.Services.AddScoped<KitchenClube.Services.V1.IUserService, KitchenClube.Services.V1.UserService>();
+    builder.Services.AddScoped<KitchenClube.Services.V1.IAuthService, KitchenClube.Services.V1.AuthService>();
+    builder.Services.AddScoped<KitchenClube.Services.V1.IRoleService, KitchenClube.Services.V1.RoleService>();
 
-    builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
+    builder.Services.AddScoped<KitchenClube.Services.V2.IFoodService, KitchenClube.Services.V2.FoodService>();
+    builder.Services.AddScoped<KitchenClube.Services.V2.IMenuService, KitchenClube.Services.V2.MenuService>();
+    builder.Services
+        .AddScoped<KitchenClube.Services.V2.IMenuItemService, KitchenClube.Services.V2.MenuItemService>();
+    builder.Services
+        .AddScoped<KitchenClube.Services.V2.IUserMenuItemSelectionService, KitchenClube.Services.V2.UserMenuItemSelectionService>();
+    builder.Services.AddScoped<KitchenClube.Services.V2.IUserService, KitchenClube.Services.V2.UserService>();
+    builder.Services.AddScoped<KitchenClube.Services.V2.IAuthService, KitchenClube.Services.V2.AuthService>();
+    builder.Services.AddScoped<KitchenClube.Services.V2.IRoleService, KitchenClube.Services.V2.RoleService>();
     builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-    builder.Services.AddHttpContextAccessor();
+    //builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, SwaggerConfigureOptions>();
 
+    builder.Services.AddHttpContextAccessor();
+    builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
+    
     builder.Services.AddControllers().AddFluentValidation(x =>
     {
         x.ImplicitlyValidateChildProperties = true;
         x.ImplicitlyValidateRootCollectionElements = true;
         x.RegisterValidatorsFromAssembly(Assembly.GetExecutingAssembly());
     });
-
     builder.Services.AddEndpointsApiExplorer();
+
     builder.Services.AddSwaggerGen(options =>
     {
         options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
@@ -61,6 +76,9 @@ var builder = WebApplication.CreateBuilder(args);
 
         options.OperationFilter<SecurityRequirementsOperationFilter>();
     });
+
+    builder.Services.AddAndConfigureApiVersioning();
+    builder.Services.AddEndpointsApiExplorer();
 
     builder.Services.AddAuthentication(options =>
     {
@@ -89,8 +107,7 @@ app.UseMiddleware<ExceptionMiddleware>();
 {
     if (app.Environment.IsDevelopment())
     {
-        app.UseSwagger();
-        app.UseSwaggerUI();
+        app.AddSwagger();
     }
 
     app.UseHttpsRedirection();
