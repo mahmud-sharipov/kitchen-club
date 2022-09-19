@@ -1,5 +1,6 @@
 ﻿global using KitchenClube.Data;
 global using KitchenClube.Exceptions;
+global using KitchenClube.Services;
 global using KitchenClube.Models;
 global using KitchenClube.Requests.Food;
 global using KitchenClube.Requests.Menu;
@@ -27,9 +28,6 @@ global using FluentValidation;
 
 global using Microsoft.AspNetCore.Identity;
 global using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-
-global using KitchenClube.Filters;
-global using Microsoft.AspNetCore.Mvc.Filters;
 
 global using KitchenClube.Extentions;
 global using KitchenClube.Configurations;

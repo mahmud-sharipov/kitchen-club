@@ -19,7 +19,7 @@ public class SwaggerConfigureOptions : IConfigureOptions<SwaggerGenOptions>
         {
             options.SwaggerDoc(desc.GroupName, new OpenApiInfo
             {
-                Title = "Test Kitchen Club API",
+                Title = "Kitchen Club API",
                 Version = desc.ApiVersion.ToString()
             });
         }

@@ -12,7 +12,7 @@ public static class SwaggerExtention
             {
                 swagger.Servers = new List<OpenApiServer>()
                 {
-                    new OpenApiServer(){Url = $"http://{req.Host}"}
+                    new OpenApiServer(){Url = $"https://{req.Host}"}
                 };
             });
         });

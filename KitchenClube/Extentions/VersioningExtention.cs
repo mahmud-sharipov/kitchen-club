@@ -4,7 +4,6 @@ public static class VersioningExtention
 {
     public static IServiceCollection AddAndConfigureApiVersioning(this IServiceCollection services)
     {
-
         services.ConfigureOptions<SwaggerConfigureOptions>();
 
         services.AddApiVersioning(o =>
