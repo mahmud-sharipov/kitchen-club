@@ -8,9 +8,29 @@ public static class Context
 {
     public static List<Food> Foods = new List<Food>()
     {
-        new Food { Id = new Guid("D25AD448-3FA4-468E-AF78-839EA8A570C3"), Name = "Osh", Description = "1 ба 1", Image = "images/osh.png", IsActive = true },
-            new Food { Id = new Guid("33203271-4317-48CB-A02D-5CF7BC94A9F2"), Name = "Kazan-Kebab", Description = "Бо гӯшти гӯспанд", Image = "images/kazan.png", IsActive = true },
-            new Food { Id = new Guid("31801C4C-CBD2-45D6-AF8A-3B21210562D9"), Name = "Jazza", Description = "Бо гӯшти гов", Image = "images/jazza.png", IsActive = true }
+        new Food 
+        { 
+            Id = new Guid("D25AD448-3FA4-468E-AF78-839EA8A570C3"), 
+            Name = "Osh", Description = "1 ба 1", 
+            Image = "images/osh.png", 
+            IsActive = true 
+        },
+        new Food 
+        { 
+            Id = new Guid("33203271-4317-48CB-A02D-5CF7BC94A9F2"), 
+            Name = "Kazan-Kebab", 
+            Description = "Бо гӯшти гӯспанд", 
+            Image = "images/kazan.png", 
+            IsActive = true 
+        },
+        new Food 
+        { 
+            Id = new Guid("31801C4C-CBD2-45D6-AF8A-3B21210562D9"), 
+            Name = "Jazza", 
+            Description = "Бо гӯшти гов", 
+            Image = "images/jazza.png", 
+            IsActive = true 
+        }
     };
 
     public static List<MenuItem> MenuItems = new List<MenuItem>()
