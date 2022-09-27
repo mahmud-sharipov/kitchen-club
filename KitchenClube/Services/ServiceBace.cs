@@ -19,7 +19,6 @@ public class ServiceBace<TEntity> where TEntity : BaseEntity
         await _dbSet.FindOrThrowExceptionAsync(id);
 }
 
-
 public static class EFExtensions
 {
     public static async Task<TEntity> FindOrThrowExceptionAsync<TEntity>(this DbSet<TEntity> entities, Guid id) where TEntity : BaseEntity

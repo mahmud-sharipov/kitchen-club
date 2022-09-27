@@ -28,13 +28,13 @@ public class MenuItemsController : ControllerBase
     [HttpGet("menu/{menuId}")]
     public async Task<ActionResult<IEnumerable<MenuItemResponse>>> GetMenuItemsByMenuId(Guid menuId)
     {
-        return Ok(await _menuItemService.MenuItemsByMenuId(menuId));
+        return Ok(await _menuItemService.GetMenuItemsByMenuId(menuId));
     }
 
     [HttpGet("food/{foodId}")]
     public async Task<ActionResult<IEnumerable<MenuItemResponse>>> GetMenuItemsByFoodId(Guid foodId)
     {
-        return Ok(await _menuItemService.MenuItemsByFoodId(foodId));
+        return Ok(await _menuItemService.GetMenuItemsByFoodId(foodId));
     }
 
     [HttpPut("{id}"), Authorize(Roles = "Admin")]

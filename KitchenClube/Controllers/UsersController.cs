@@ -25,13 +25,18 @@ public class UsersController : ControllerBase
         return Ok(await _userService.GetAsync(id));
     }
 
+    [HttpGet("roles/{id}")]
+    public async Task<ActionResult<IEnumerable<string>>> GetRoles(Guid id)
+    {
+        return Ok(await _userService.GetRolesAsync(id));
+    }
+
     [HttpPut("{id}")]
     public async Task<IActionResult> PutUser(Guid id, UpdateUser updateUser)
     {
         await _userService.UpdateAsync(id, updateUser);
         return NoContent();
     }
-    
 
     [HttpPut("roles/{id}"), Authorize(Roles = "Admin")]
     public async Task<IActionResult> PutUserRole(Guid id, UpdateUserRole updateUserRole)

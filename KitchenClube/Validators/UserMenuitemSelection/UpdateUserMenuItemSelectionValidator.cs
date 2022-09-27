@@ -4,7 +4,7 @@ public class UpdateUserMenuItemSelectionValidator:AbstractValidator<UpdateUserMe
 {
     public UpdateUserMenuItemSelectionValidator()
     {
-        RuleFor(u => u.Vote).NotEmpty();
+        RuleFor(u => u.Vote).IsInEnum();
         RuleFor(u => u.MenuitemId).NotEmpty();
         RuleFor(u => u.UserId).NotEmpty();
     }

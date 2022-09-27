@@ -8,12 +8,15 @@ public class RoleService : IRoleService
 
     public RoleService(UserManager<User> usermanager, IMapper mapper, RoleManager<Role> roleManager)
     {
-        _usermanager = usermanager;
+        _usermanager = usermanager;     
         _mapper = mapper;
         _roleManager = roleManager;
     }
 
-    public async Task<ActionResult<IEnumerable<Role>>> GetAllAsync() => await _roleManager.Roles.ToListAsync();
+    public async Task<IEnumerable<RoleResponse>> GetAllAsync()
+    {
+        return await _roleManager.Roles.Select(r => _mapper.Map<Role, RoleResponse>(r)).ToListAsync();
+    }
 
     public async Task<RoleResponse> GetAsync(Guid id)
     {
@@ -47,7 +50,7 @@ public class RoleService : IRoleService
         var urs = await _usermanager.GetUsersInRoleAsync(role.Name);
 
         if (urs.Count > 0)
-            throw new BadRequestException("Cannot delete role because there are Users with it");
+            throw new BadRequestException("Cannot delete role because there are some Users with it");
 
         await _roleManager.DeleteAsync(role);
     }

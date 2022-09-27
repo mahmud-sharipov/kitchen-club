@@ -1,4 +1,5 @@
 ﻿namespace KitchenClube.Services;
+
 public class MenuService : ServiceBace<Menu>, IMenuService
 {
     public MenuService(KitchenClubContext context, IMapper mapper) : base(context,context.Menu, mapper){}

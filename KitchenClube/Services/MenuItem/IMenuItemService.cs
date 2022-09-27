@@ -12,7 +12,7 @@ public interface IMenuItemService
 
     Task DeleteAsync(Guid id);
 
-    Task <IEnumerable<MenuItemResponse>> MenuItemsByMenuId(Guid menuId);
+    Task <IEnumerable<MenuItemResponse>> GetMenuItemsByMenuId(Guid menuId);
 
-    Task <IEnumerable<MenuItemResponse>> MenuItemsByFoodId(Guid foodId);
+    Task <IEnumerable<MenuItemResponse>> GetMenuItemsByFoodId(Guid foodId);
 }

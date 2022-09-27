@@ -4,6 +4,7 @@ public interface IUserService
 {
     Task<IEnumerable<UserResponse>> GetAllAsync();
     Task<UserResponse> GetAsync(Guid id);
+    Task<IEnumerable<string>> GetRolesAsync(Guid id);
     Task<UserResponse> CreateAsync(CreateUser createUser);
     Task UpdateAsync(Guid id, UpdateUser updateUser);
     Task UpdateAsync(Guid id, UpdateUserRole updateUserRole);

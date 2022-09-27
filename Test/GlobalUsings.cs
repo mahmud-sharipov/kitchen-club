@@ -9,3 +9,13 @@ global using System;
 global using System.Collections.Generic;
 global using System.Linq;
 global using Xunit;
+global using KitchenClube.Models;
+global using System.Threading.Tasks;
+
+global using Moq;
+global using KitchenClube.Requests.Menu;
+global using KitchenClube.Requests.MenuItem;
+global using KitchenClube.Requests.UserMenuItemSelection;
+global using KitchenClube.Requests.User;
+global using KitchenClube.Requests.Roles;
+global using KitchenClube.Validators.User;

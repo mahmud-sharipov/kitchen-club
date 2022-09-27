@@ -1,6 +1,6 @@
 ﻿namespace KitchenClube.Validators;
 
-public class UpdateUserValidator:AbstractValidator<UpdateUser>
+public class UpdateUserValidator : AbstractValidator<UpdateUser>
 {
     public UpdateUserValidator()
     {

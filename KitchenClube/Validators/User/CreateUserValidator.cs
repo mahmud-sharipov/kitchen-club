@@ -6,7 +6,7 @@ public class CreateUserValidator : AbstractValidator<CreateUser>
     {
         RuleFor(u => u.FullName).NotEmpty();  
         RuleFor(u => u.PhoneNumber).NotEmpty();
-        RuleFor(u => u.Password).NotEmpty();
+        RuleFor(u => u.Roles).NotEmpty();
         RuleFor(u => u.Email).EmailAddress();
         RuleFor(u => u.Password).NotEmpty().MinimumLength(6);
     }

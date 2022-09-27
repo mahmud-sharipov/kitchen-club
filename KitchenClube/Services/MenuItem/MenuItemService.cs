@@ -14,13 +14,13 @@ public class MenuItemService : ServiceBace<MenuItem>, IMenuItemService
         return _mapper.Map<MenuItem, MenuItemResponse>(await FindOrThrowExceptionAsync(id));
     }
 
-    public async Task<IEnumerable<MenuItemResponse>> MenuItemsByMenuId(Guid menuId)
+    public async Task<IEnumerable<MenuItemResponse>> GetMenuItemsByMenuId(Guid menuId)
     {
         return await _context.MenuItems.Where(mi => mi.MenuId == menuId)
             .Select(m => _mapper.Map<MenuItem, MenuItemResponse>(m)).ToListAsync();
     }
 
-    public async Task<IEnumerable<MenuItemResponse>> MenuItemsByFoodId(Guid foodId)
+    public async Task<IEnumerable<MenuItemResponse>> GetMenuItemsByFoodId(Guid foodId)
     {
         return await _context.MenuItems.Where(mi => mi.FoodId == foodId && mi.Menu.Status == MenuStatus.Active)
             .Select(m => _mapper.Map<MenuItem, MenuItemResponse>(m)).ToListAsync();
@@ -78,6 +78,9 @@ public class MenuItemService : ServiceBace<MenuItem>, IMenuItemService
 
         if (menuItem.Day < DateTime.Now)
             throw new BadRequestException("Can not delete, because menuitem's day in past");
+
+        if (_context.UserMenuItemSelections.Any(u => u.MenuitemId == id))
+            throw new BadRequestException("Can not delete, because some users selected this menuitem");
 
         _context.MenuItems.Remove(menuItem);
         await _context.SaveChangesAsync();

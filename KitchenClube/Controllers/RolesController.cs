@@ -14,7 +14,7 @@ public class RolesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetRoles()
+    public async Task<ActionResult<IEnumerable<RoleResponse>>> GetRoles()
     {
         return Ok(await _roleService.GetAllAsync());
     }

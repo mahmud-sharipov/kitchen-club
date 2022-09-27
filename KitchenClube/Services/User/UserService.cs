@@ -17,11 +17,7 @@ public class UserService : IUserService
 
     public async Task<IEnumerable<UserResponse>> GetAllAsync()
     {
-        var userResponse = await _userManager.Users.Select(u => new UserResponse(u.Id,
-        u.FullName, u.PhoneNumber, u.Email, "",
-        u.IsActive)).ToListAsync();
-
-        return userResponse;
+        return await _userManager.Users.Select(u => _mapper.Map<User, UserResponse>(u)).ToListAsync();
     }
 
     public async Task<UserResponse> GetAsync(Guid id)
@@ -31,14 +27,17 @@ public class UserService : IUserService
         if (user == null)
             throw new NotFoundException("User", id);
 
-        var userResponse = new UserResponse(
-                user.Id,
-                user.FullName,
-                user.PhoneNumber,
-                user.Email,
-                "",
-                user.IsActive);
-        return userResponse;
+        return _mapper.Map<User, UserResponse>(user);
+    }
+
+    public async Task<IEnumerable<string>> GetRolesAsync(Guid userId)
+    {
+        var user = await _userManager.Users.Where(u => u.Id == userId).FirstOrDefaultAsync();
+
+        if (user == null)
+            throw new NotFoundException("User", userId);
+
+        return await _userManager.GetRolesAsync(user);
     }
 
     public async Task UpdateAsync(Guid id, UpdateUser updateUser)
@@ -59,11 +58,11 @@ public class UserService : IUserService
 
         var userRoles = await _userManager.GetRolesAsync(user);
 
-        var addedRoles = updateUserRole.Roles.Except(userRoles);
-        var removedRoles = userRoles.Except(updateUserRole.Roles);
+        var newRoles = updateUserRole.Roles.Except(userRoles);
+        var oldRoles = userRoles.Except(updateUserRole.Roles);
 
-        await _userManager.AddToRolesAsync(user, addedRoles);
-        await _userManager.RemoveFromRolesAsync(user, removedRoles);
+        await _userManager.AddToRolesAsync(user, newRoles);
+        await _userManager.RemoveFromRolesAsync(user, oldRoles);
     }
 
     public async Task<UserResponse> CreateAsync(CreateUser createUser)
@@ -79,9 +78,9 @@ public class UserService : IUserService
         var result = await _userManager.CreateAsync(user, createUser.Password);
 
         await _userManager.AddToRolesAsync(user, createUser.Roles);
-
+        
         return new UserResponse(user.Id, user.FullName, user.PhoneNumber, user.Email,
-            "", user.IsActive);
+            user.IsActive);
     }
 
     public async Task DeleteAsync(Guid id)

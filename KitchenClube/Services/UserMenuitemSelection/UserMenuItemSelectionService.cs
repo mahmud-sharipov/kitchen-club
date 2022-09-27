@@ -36,21 +36,18 @@ public class UserMenuItemSelectionService : ServiceBace<UserMenuItemSelection>, 
     {
         var userMenuItemSelection = await FindOrThrowExceptionAsync(id);
 
-        var menuItem = _context.MenuItems.FirstOrDefault(m => m.Id == userMenuItemSelection.MenuitemId);
-        if (menuItem.Day < DateTime.Now)
+        var menuitem = await _context.MenuItems.FindOrThrowExceptionAsync(updateUserMenuItemSelection.MenuitemId);
+            
+        if (menuitem.Day < DateTime.Now)
             throw new BadRequestException("Can not change past users' selections");
+
+        if (menuitem.IsActive == false)
+            throw new BadRequestException("Can not change because menuitem is not active");
 
         var user = await _userManager.Users.Where(u => u.Id == updateUserMenuItemSelection.UserId).FirstOrDefaultAsync();
 
-        if (user is null)
-            throw new NotFoundException("User", updateUserMenuItemSelection.UserId);
-
         if (user.IsActive == false)
             throw new BadRequestException("User can not select menu because he/she is not active");
-
-        var menuitem = await _context.MenuItems.FindOrThrowExceptionAsync(updateUserMenuItemSelection.MenuitemId);
-        if (menuitem.IsActive == false)
-            throw new BadRequestException("Can not change because menuitem is not active");
 
         userMenuItemSelection.User = user;
         userMenuItemSelection.Menuitem = menuitem;
@@ -64,9 +61,6 @@ public class UserMenuItemSelectionService : ServiceBace<UserMenuItemSelection>, 
     {
         var idUser = _contextAccessor.HttpContext.User.FindFirst(ClaimTypes.Sid).Value;
         var user = await _userManager.Users.Where(u => u.Id == Guid.Parse(idUser)).FirstOrDefaultAsync();
-
-        if (user is null)
-            throw new NotFoundException("User", idUser);
         
         var menuItem = await _context.MenuItems.FindOrThrowExceptionAsync(createUserMenuItemSelection.MenuitemId);
 
