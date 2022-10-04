@@ -6,8 +6,8 @@ public static class ServicesExtention
     {
         services.AddScoped<IFoodService, FoodService>();
         services.AddScoped<IMenuService, MenuService>();
-        services.AddScoped<IMenuItemService, MenuItemService>();
-        services.AddScoped<IUserMenuItemSelectionService, UserMenuItemSelectionService>();
+        services.AddScoped<IMenuitemService, MenuitemService>();
+        services.AddScoped<IUserMenuitemSelectionService, UserMenuitemSelectionService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IRoleService, RoleService>();

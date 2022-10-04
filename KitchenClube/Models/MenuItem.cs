@@ -1,10 +1,10 @@
 ﻿namespace KitchenClube.Models;
 
-public class MenuItem : BaseEntity
+public class Menuitem : BaseEntity
 {
-    public MenuItem()
+    public Menuitem()
     {
-        UserMenuItemSelections = new Collection<UserMenuItemSelection>();
+        UserMenuItemSelections = new Collection<UserMenuitemSelection>();
         IsActive = true;
     }
 
@@ -17,5 +17,5 @@ public class MenuItem : BaseEntity
     public Guid MenuId { get; set; }
     public virtual Menu Menu { get; set; }
 
-    public virtual ICollection<UserMenuItemSelection> UserMenuItemSelections { get; private set; }
+    public virtual ICollection<UserMenuitemSelection> UserMenuItemSelections { get; private set; }
 }

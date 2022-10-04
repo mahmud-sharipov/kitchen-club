@@ -56,6 +56,9 @@ public class UserService : IUserService
     {
         var user = await _userManager.Users.Where(u => u.Id == id).FirstOrDefaultAsync();
 
+        if (user is null)
+            throw new NotFoundException(nameof(User), id);
+
         var userRoles = await _userManager.GetRolesAsync(user);
 
         var newRoles = updateUserRole.Roles.Except(userRoles);

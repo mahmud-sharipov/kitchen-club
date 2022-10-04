@@ -1,18 +1,18 @@
 ﻿namespace KitchenClube.Services;
 
-public interface IMenuItemService
+public interface IMenuitemService
 {
-    Task<IEnumerable<MenuItemResponse>> GetAllAsync();
+    Task<IEnumerable<MenuitemResponse>> GetAllAsync();
 
-    Task<MenuItemResponse> GetAsync(Guid id);
+    Task<MenuitemResponse> GetAsync(Guid id);
 
-    Task UpdateAsync(Guid id, UpdateMenuItem updateMenuItem);
+    Task UpdateAsync(Guid id, UpdateMenuitem updateMenuitem);
 
-    Task<MenuItemResponse> CreateAsync(CreateMenuItem createMenuItem); 
+    Task<MenuitemResponse> CreateAsync(CreateMenuitem createMenuitem); 
 
     Task DeleteAsync(Guid id);
 
-    Task <IEnumerable<MenuItemResponse>> GetMenuItemsByMenuId(Guid menuId);
+    Task <IEnumerable<MenuitemResponse>> GetMenuitemsByMenuId(Guid menuId);
 
-    Task <IEnumerable<MenuItemResponse>> GetMenuItemsByFoodId(Guid foodId);
+    Task <IEnumerable<MenuitemResponse>> GetMenuitemsByFoodId(Guid foodId);
 }

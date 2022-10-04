@@ -1,3 +1,3 @@
 ﻿namespace KitchenClube.Requests.MenuItem;
 
-public record class UpdateMenuItem(DateTime Day, Guid FoodId, Guid MenuId, bool IsActive);
+public record class UpdateMenuitem(DateTime Day, Guid FoodId, Guid MenuId, bool IsActive);

@@ -2,11 +2,11 @@
 
 namespace KitchenClube.Data.TableConfigurations;
 
-public class MenuItemConfigurations : IEntityTypeConfiguration<MenuItem>
+public class MenuItemConfigurations : IEntityTypeConfiguration<Menuitem>
 {
-    public void Configure(EntityTypeBuilder<MenuItem> builder)
+    public void Configure(EntityTypeBuilder<Menuitem> builder)
     {
-        builder.ToTable(nameof(MenuItem) + "s")
+        builder.ToTable(nameof(Menuitem) + "s")
             .HasKey(m => m.Id);
 
         builder.HasOne(m => m.Food)

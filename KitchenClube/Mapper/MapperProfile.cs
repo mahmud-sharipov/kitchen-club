@@ -16,12 +16,12 @@ public class MapperProfile : Profile
         CreateMap<CreateMenu, Menu>();
         CreateMap<Menu, MenuResponse>();
 
-        CreateMap<MenuItem, MenuItemResponse>();
+        CreateMap<Menuitem, MenuitemResponse>();
 
         CreateMap<UpdateRole, Role>();
         CreateMap<CreateRole, Role>();
         CreateMap<Role, RoleResponse>();
 
-        CreateMap<UserMenuItemSelection, UserMenuItemSelectionResponse>();
+        CreateMap<UserMenuitemSelection, UserMenuitemSelectionResponse>();
     }
 }

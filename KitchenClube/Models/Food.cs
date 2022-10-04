@@ -7,12 +7,12 @@ public class Food : BaseEntity
         Name = String.Empty;
         Image = String.Empty;
         Description = String.Empty;
-        MenuItems = new Collection<MenuItem>();
+        MenuItems = new Collection<Menuitem>();
     }
 
     public string Name { get; set; }
     public string Image { get; set; }
     public string Description { get; set; }
     public bool IsActive { get; set; }
-    public virtual ICollection<MenuItem> MenuItems { get; private set; }
+    public virtual ICollection<Menuitem> MenuItems { get; private set; }
 }

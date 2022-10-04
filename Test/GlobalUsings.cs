@@ -19,3 +19,8 @@ global using KitchenClube.Requests.UserMenuItemSelection;
 global using KitchenClube.Requests.User;
 global using KitchenClube.Requests.Roles;
 global using KitchenClube.Validators.User;
+global using Microsoft.AspNetCore.Mvc.Testing;
+global using Newtonsoft.Json;
+global using System.Net;
+global using System.Net.Http;
+global using System.Text;

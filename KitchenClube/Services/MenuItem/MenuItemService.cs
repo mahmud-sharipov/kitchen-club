@@ -1,32 +1,38 @@
 ﻿namespace KitchenClube.Services;
 
-public class MenuItemService : ServiceBace<MenuItem>, IMenuItemService
+public class MenuitemService : ServiceBace<Menuitem>, IMenuitemService
 {
-    public MenuItemService(KitchenClubContext context, IMapper mapper) : base(context, context.MenuItems, mapper) { }
+    public MenuitemService(KitchenClubContext context, IMapper mapper) : base(context, context.MenuItems, mapper) { }
 
-    public async Task<IEnumerable<MenuItemResponse>> GetAllAsync()
+    public async Task<IEnumerable<MenuitemResponse>> GetAllAsync()
     {
-        return await _context.MenuItems.Select(m => _mapper.Map<MenuItem, MenuItemResponse>(m)).ToListAsync();
+        return await _context.MenuItems.Select(m => _mapper.Map<Menuitem, MenuitemResponse>(m)).ToListAsync();
     }
 
-    public async Task<MenuItemResponse> GetAsync(Guid id)
+    public async Task<MenuitemResponse> GetAsync(Guid id)
     {
-        return _mapper.Map<MenuItem, MenuItemResponse>(await FindOrThrowExceptionAsync(id));
+        return _mapper.Map<Menuitem, MenuitemResponse>(await FindOrThrowExceptionAsync(id));
     }
 
-    public async Task<IEnumerable<MenuItemResponse>> GetMenuItemsByMenuId(Guid menuId)
+    public async Task<IEnumerable<MenuitemResponse>> GetMenuitemsByMenuId(Guid menuId)
     {
-        return await _context.MenuItems.Where(mi => mi.MenuId == menuId)
-            .Select(m => _mapper.Map<MenuItem, MenuItemResponse>(m)).ToListAsync();
+        if (!_context.MenuItems.Any(mi => mi.MenuId == menuId))
+            throw new NotFoundException(nameof(Menu), menuId);
+        
+        return await _context.MenuItems.Where(mi => mi.MenuId == menuId && mi.Menu.Status == MenuStatus.Active)
+            .Select(m => _mapper.Map<Menuitem, MenuitemResponse>(m)).ToListAsync();
     }
 
-    public async Task<IEnumerable<MenuItemResponse>> GetMenuItemsByFoodId(Guid foodId)
+    public async Task<IEnumerable<MenuitemResponse>> GetMenuitemsByFoodId(Guid foodId)
     {
+        if(!_context.MenuItems.Any(mi=>mi.FoodId == foodId))
+            throw new NotFoundException(nameof(Food), foodId);
+
         return await _context.MenuItems.Where(mi => mi.FoodId == foodId && mi.Menu.Status == MenuStatus.Active)
-            .Select(m => _mapper.Map<MenuItem, MenuItemResponse>(m)).ToListAsync();
+            .Select(m => _mapper.Map<Menuitem, MenuitemResponse>(m)).ToListAsync();
     }
 
-    public async Task UpdateAsync(Guid id, UpdateMenuItem updateMenuItem)
+    public async Task UpdateAsync(Guid id, UpdateMenuitem updateMenuItem)
     {
         var menuItem = await FindOrThrowExceptionAsync(id);
 
@@ -39,6 +45,9 @@ public class MenuItemService : ServiceBace<MenuItem>, IMenuItemService
         if (menuItem.Day < updateMenuItem.Day)
             throw new BadRequestException("Can not change the date of the past menu.");
 
+        if (_context.UserMenuItemSelections.Any(u => u.MenuitemId == id))
+            throw new BadRequestException("Can not update, because some users selected this menuitem");
+
         menuItem.Day = updateMenuItem.Day;
         menuItem.IsActive = updateMenuItem.IsActive;
         menuItem.Food = food;
@@ -48,7 +57,7 @@ public class MenuItemService : ServiceBace<MenuItem>, IMenuItemService
         await _context.SaveChangesAsync();
     }
 
-    public async Task<MenuItemResponse> CreateAsync(CreateMenuItem createMenuItem)
+    public async Task<MenuitemResponse> CreateAsync(CreateMenuitem createMenuItem)
     {
         var menu = await _context.Menu.FindOrThrowExceptionAsync(createMenuItem.MenuId);
 
@@ -60,7 +69,7 @@ public class MenuItemService : ServiceBace<MenuItem>, IMenuItemService
         if (createMenuItem.Day > menu.EndDate || createMenuItem.Day < menu.StartDate)
             throw new BadRequestException("Date is out of menu period!");
 
-        var menuItem = new MenuItem()
+        var menuItem = new Menuitem()
         {
             IsActive = true,
             Food = food,
@@ -69,7 +78,7 @@ public class MenuItemService : ServiceBace<MenuItem>, IMenuItemService
         };
         _context.MenuItems.Add(menuItem);
         await _context.SaveChangesAsync();
-        return _mapper.Map<MenuItem, MenuItemResponse>(menuItem);
+        return _mapper.Map<Menuitem, MenuitemResponse>(menuItem);
     }
 
     public async Task DeleteAsync(Guid id)

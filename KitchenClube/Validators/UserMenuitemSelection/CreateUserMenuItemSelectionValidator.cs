@@ -1,6 +1,6 @@
 ﻿namespace KitchenClube.Validators;
 
-public class CreateUserMenuItemSelectionValidator:AbstractValidator<CreateUserMenuItemSelection>
+public class CreateUserMenuItemSelectionValidator:AbstractValidator<CreateUserMenuitemSelection>
 {
     public CreateUserMenuItemSelectionValidator()
     {

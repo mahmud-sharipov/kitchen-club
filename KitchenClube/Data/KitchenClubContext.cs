@@ -5,8 +5,8 @@ public abstract class KitchenClubContext : IdentityDbContext<User,Role,Guid>
     public KitchenClubContext(DbContextOptions options) : base(options) { }
     public DbSet<Food> Foods { get; set; }
     public DbSet<Menu> Menu { get; set; }
-    public DbSet<MenuItem> MenuItems { get; set; }
-    public DbSet<UserMenuItemSelection> UserMenuItemSelections { get; set; }
+    public DbSet<Menuitem> MenuItems { get; set; }
+    public DbSet<UserMenuitemSelection> UserMenuItemSelections { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) { }
 

@@ -4,57 +4,57 @@
 [ApiController]
 [ApiVersion("1.0")]
 [Authorize]
-public class MenuItemsController : ControllerBase
+public class MenuitemsController : ControllerBase
 {
-    private readonly IMenuItemService _menuItemService;
+    private readonly IMenuitemService _menuitemService;
  
-    public MenuItemsController(IMenuItemService menuItemService)
+    public MenuitemsController(IMenuitemService menuitemService)
     {
-        _menuItemService = menuItemService;        
+        _menuitemService = menuitemService;        
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<MenuItemResponse>>> GetMenuItems()
+    public async Task<ActionResult<IEnumerable<MenuitemResponse>>> GetMenuitems()
     {
-        return Ok(await _menuItemService.GetAllAsync());
+        return Ok(await _menuitemService.GetAllAsync());
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<MenuItemResponse>> GetMenuItem(Guid id)
+    public async Task<ActionResult<MenuitemResponse>> GetMenuitem(Guid id)
     {
-        return Ok(await _menuItemService.GetAsync(id));
+        return Ok(await _menuitemService.GetAsync(id));
     }
    
     [HttpGet("menu/{menuId}")]
-    public async Task<ActionResult<IEnumerable<MenuItemResponse>>> GetMenuItemsByMenuId(Guid menuId)
+    public async Task<ActionResult<IEnumerable<MenuitemResponse>>> GetMenuitemsByMenuId(Guid menuId)
     {
-        return Ok(await _menuItemService.GetMenuItemsByMenuId(menuId));
+        return Ok(await _menuitemService.GetMenuitemsByMenuId(menuId));
     }
 
     [HttpGet("food/{foodId}")]
-    public async Task<ActionResult<IEnumerable<MenuItemResponse>>> GetMenuItemsByFoodId(Guid foodId)
+    public async Task<ActionResult<IEnumerable<MenuitemResponse>>> GetMenuitemsByFoodId(Guid foodId)
     {
-        return Ok(await _menuItemService.GetMenuItemsByFoodId(foodId));
+        return Ok(await _menuitemService.GetMenuitemsByFoodId(foodId));
     }
 
     [HttpPut("{id}"), Authorize(Roles = "Admin")]
-    public async Task<IActionResult> PutMenuItem(Guid id, UpdateMenuItem updateMenuItem)
+    public async Task<IActionResult> PutMenuitem(Guid id, UpdateMenuitem updateMenuitem)
     {
-        await _menuItemService.UpdateAsync(id, updateMenuItem);
+        await _menuitemService.UpdateAsync(id, updateMenuitem);
         return NoContent();
     }
 
     [HttpPost, Authorize(Roles = "Admin")]
-    public async Task<ActionResult<MenuItem>> PostMenuItem(CreateMenuItem createMenuItem)
+    public async Task<ActionResult<Menuitem>> PostMenuitem(CreateMenuitem createMenuitem)
     {
-        var menuItem = await _menuItemService.CreateAsync(createMenuItem);
-        return CreatedAtAction("GetMenuItem", new { id = menuItem.Id }, menuItem);
+        var menuitem = await _menuitemService.CreateAsync(createMenuitem);
+        return CreatedAtAction("GetMenuitem", new { id = menuitem.Id }, menuitem);
     }
 
     [HttpDelete("{id}"), Authorize(Roles = "Admin")]
-    public async Task<IActionResult> DeleteMenuItem(Guid id)
+    public async Task<IActionResult> DeleteMenuitem(Guid id)
     {
-        await _menuItemService.DeleteAsync(id);
+        await _menuitemService.DeleteAsync(id);
         return NoContent();
     }
 }

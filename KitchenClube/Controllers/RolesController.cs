@@ -39,7 +39,7 @@ public class RolesController : ControllerBase
         return CreatedAtAction("GetRole", new { id = role.Id }, role);
     }
 
-    [HttpDelete]
+    [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteRole(Guid id)
     {
         await _roleService.DeleteAsync(id);
