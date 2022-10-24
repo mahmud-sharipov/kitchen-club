@@ -14,6 +14,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet]
+    [EnableQuery]
     public async Task<ActionResult<IEnumerable<UserResponse>>> GetUsers()
     {
         return Ok(await _userService.GetAllAsync());

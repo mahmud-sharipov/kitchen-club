@@ -31,3 +31,4 @@ global using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 global using KitchenClube.Extentions;
 global using KitchenClube.Configurations;
+global using Microsoft.AspNetCore.OData.Query;

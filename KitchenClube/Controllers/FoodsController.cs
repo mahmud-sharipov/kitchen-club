@@ -14,6 +14,7 @@ public class FoodsController : ControllerBase
     }
 
     [HttpGet]
+    [EnableQuery]
     public async Task<ActionResult<IEnumerable<FoodResponse>>> GetFoods() =>
         Ok(await _foodService.GetAllAsync());
 

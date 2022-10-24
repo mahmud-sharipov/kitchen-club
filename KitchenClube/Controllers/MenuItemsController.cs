@@ -14,6 +14,7 @@ public class MenuitemsController : ControllerBase
     }
 
     [HttpGet]
+    [EnableQuery]
     public async Task<ActionResult<IEnumerable<MenuitemResponse>>> GetMenuitems()
     {
         return Ok(await _menuitemService.GetAllAsync());

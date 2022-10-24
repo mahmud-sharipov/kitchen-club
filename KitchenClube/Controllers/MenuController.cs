@@ -13,6 +13,7 @@ public class MenuController : ControllerBase
     }
 
     [HttpGet]
+    [EnableQuery]
     public async Task<ActionResult<IEnumerable<MenuResponse>>> GetMenu()
     {
         return Ok(await _menuService.GetAllAsync());

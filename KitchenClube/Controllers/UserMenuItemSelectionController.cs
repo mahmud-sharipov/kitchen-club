@@ -13,6 +13,7 @@ public class UserMenuItemSelectionController : ControllerBase
     }
 
     [HttpGet]
+    [EnableQuery]
     public async Task<ActionResult<IEnumerable<UserMenuitemSelectionResponse>>> GetUserMenuItemSelections()
     {
         return Ok(await _userMenuItemSelection.GetAllAsync());

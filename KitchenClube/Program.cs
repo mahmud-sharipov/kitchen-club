@@ -1,5 +1,6 @@
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.OData;
 using Swashbuckle.AspNetCore.Filters;
 using System.Reflection;
 
@@ -47,7 +48,8 @@ public class Program
                 x.ImplicitlyValidateChildProperties = true;
                 x.ImplicitlyValidateRootCollectionElements = true;
                 x.RegisterValidatorsFromAssembly(Assembly.GetExecutingAssembly());
-            });
+            })
+                .AddOData(opt => opt.Select().Filter().Count().OrderBy().Expand());            
 
             builder.Services.AddEndpointsApiExplorer();
 
